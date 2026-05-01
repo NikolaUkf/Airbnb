@@ -1,0 +1,105 @@
+.reviews .overall-rating {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding-bottom: 25px;
+}
+.reviews .overall-rating .num {
+  font-size: 30px;
+  font-weight: bold;
+  color: #F5A624;
+}
+.reviews .overall-rating .stars {
+  display: flex;
+  gap: 3px;
+}
+.reviews .overall-rating .stars svg {
+  fill: #F5A624;
+}
+.reviews .overall-rating .stars svg.alt {
+  fill: #e9eaf1;
+}
+.reviews .overall-rating .total {
+  color: #87888d;
+  font-size: 14px;
+}
+.reviews .write-review-btn, .reviews .write-review button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 0 16px;
+  height: 36px;
+  background-color: #3b3c3f;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 5px;
+  box-shadow: 0 0 6px 1px rgba(20, 24, 31, 0.1);
+}
+.reviews .write-review-btn:hover, .reviews .write-review button:hover {
+  background-color: rgb(38.6142857143, 39.3714285714, 40.8857142857);
+}
+.reviews .write-review {
+  display: none;
+  padding: 20px 0 30px 0;
+}
+.reviews .write-review textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  height: 150px;
+  margin-top: 15px;
+}
+.reviews .write-review input {
+  display: block;
+  width: 250px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-top: 15px;
+}
+.reviews .write-review button {
+  margin-top: 15px;
+  cursor: pointer;
+}
+.reviews .reviews-wrapper {
+  padding: 20px 0;
+}
+.reviews .review {
+  padding: 15px 0;
+}
+.reviews .review .name {
+  padding: 0 0 3px 0;
+  margin: 0;
+  font-size: 18px;
+  color: #5e5f63;
+}
+.reviews .review .rating-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+}
+.reviews .review .rating {
+  display: flex;
+  gap: 3px;
+}
+.reviews .review .rating svg {
+  fill: #F5A624;
+}
+.reviews .review .rating svg.alt {
+  fill: #e9eaf1;
+}
+.reviews .review .date {
+  color: #87888d;
+  font-size: 14px;
+}
+.reviews .review .content {
+  color: #464649;
+  padding: 5px 0;
+}

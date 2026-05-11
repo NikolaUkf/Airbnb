@@ -98,28 +98,92 @@ if (isset($_POST['submit'])) {
 <link rel="stylesheet" href="style/create.css">
 <link rel="stylesheet" href="style/sidebar.css">
 <link rel="stylesheet" href="style/edit.css">
+<style>
+    .container {
+        width: 100%;
+        max-width: 800px; /* Uprav podľa šírky, ktorú máš v create.php */
+        margin: 0 auto;
+    }
+
+    .form-card {
+        width: 100%;
+        background: #fff;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    /* Zjednotenie inputov, aby neboli príliš úzke */
+    .form-group input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+</style>
 </head>
 
 <body>
 
 <!-- SIDEBAR -->
-<aside class="sidebar">
-    <div class="sidebar-logo">
-        <a href="admin-dashboard.php">
-            <span>VILLA</span>
-        </a>
-    </div>
-
-    <ul class="sidebar-menu">
-        <li><a href="admin-dashboard.php">Dashboard</a></li>
-        <li><a href="read.php" class="active">Inzeráty</a></li>
-        <li><a href="create.php">Nový inzerát</a></li>
-    </ul>
-
-    <div class="sidebar-footer">
-        <a href="logout.php">Odhlásiť sa</a>
-    </div>
-</aside>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <a href="admin-dashboard.php">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                <span>VILLA</span>
+            </a>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="admin-dashboard.php">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="read.php">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    <span>Inzeráty</span>
+                </a>
+            </li>
+            <li>
+                <a href="create.php" class="active">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    <span>Nový inzerát</span>
+                </a>
+            </li>
+            <li>
+                <a href="view_messages.php">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
+                    <span>Správy</span>
+                </a>
+            </li>
+            <li>
+                <a href="view_reservations.php" >
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                    </svg>
+                    <span>Rezervácie</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="logout.php">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
+                Odhlásiť sa
+            </a>
+        </div>
+    </aside>
 
 <!-- MAIN -->
 <div class="main-content">

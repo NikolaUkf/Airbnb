@@ -1,0 +1,13 @@
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; }
+        th { background: #f5a425; color: #fff; padding: 12px 16px; text-align: left; font-size: 14px; }
+        td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #444; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafafa; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-pending { background: #fff3cd; color: #856404; }
+        .badge-confirmed { background: #d1e7dd; color: #0f5132; }
+        .badge-cancelled { background: #f8d7da; color: #842029; }
+        select { padding: 4px 8px; border-radius: 6px; border: 1px solid #ddd; font-size: 13px; }
+        .btn-save { background: #f5a425; color: #fff; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .btn-save:hover { background: #e09315; }
+        .empty { text-align: center; padding: 40px; color: #888; }

@@ -17,24 +17,38 @@ $result = $conn->query("SELECT * FROM contact_messages ORDER BY created_at DESC"
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Správy z kontaktného formulára</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { padding: 20px; background: #f5f5f5; }
-        .message-card { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #ff6b35; }
-        .badge { margin-left: 10px; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Správy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style/sidebar.css">
+    <link rel="stylesheet" href="style/view-messages.css">
 </head>
 <body>
+<!--Sidebar-->
+<?php include 'sidebar.php'; ?>
+
+        <div class="main-content">
+        <div class="top-bar">
+            <h2>Správy z kontaktného formulára</h2>
+            <div class="user-info">
+                <div class="user-info-text">
+                    <p><?php echo isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : 'Používateľ'; ?></p>
+                    <p>Administrator</p>
+                </div>
+                <div class="user-avatar">
+                    <?php echo isset($_SESSION['email']) ? strtoupper(substr($_SESSION['email'], 0, 1)) : 'A'; ?>
+                </div>
+            </div>
+        </div>
+
     <div class="container">
-        <h1>📧 Správy z kontaktného formulára</h1>
-        <hr>
         
         <?php if ($result->num_rows > 0): ?>
             <?php while ($row = $result->fetch_assoc()): ?>
                 <div class="message-card">
                     <h5><?php echo htmlspecialchars($row['name']); ?> 
-                        <span class="badge bg-info"><?php echo $row['status']; ?></span>
+                        <span class="badge"><?php echo $row['status']; ?></span>
                     </h5>
                     <p><strong>Email:</strong> <?php echo htmlspecialchars($row['email']); ?></p>
                     <p><strong>Predmet:</strong> <?php echo htmlspecialchars($row['subject']); ?></p>

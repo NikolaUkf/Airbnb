@@ -1,0 +1,31 @@
+.main-image {
+    overflow: hidden;
+    border-radius: 10px;
+    height: 400px;
+}
+
+.main-image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    vertical-align: top !important;
+    display: block !important;
+}
+
+    .orange-button {
+        background: #f5a425;
+        color: #fff;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 25px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: 0.3s;
+        width: 100%;
+    }
+
+    .orange-button:hover {
+        background: #e09000;
+    }

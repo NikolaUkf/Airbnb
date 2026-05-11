@@ -1,0 +1,239 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    color: #333;
+    padding-top: 109px;
+}
+
+.top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #fff;
+    border-bottom: 1px solid #e8e8e8;
+    padding: 8px 0;
+}
+
+.top-bar__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.top-bar__contacts {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.top-bar__contact-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13.5px;
+    color: #555;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.top-bar__contact-item:hover {
+    color: #e8490a;
+}
+
+.top-bar__contact-item .icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.icon-email { color: #e8490a; }
+.icon-map   { color: #e8490a; }
+
+.top-bar__divider {
+    width: 1px;
+    height: 18px;
+    background: #d0d0d0;
+}
+
+.top-bar__socials {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid #ccc;
+    color: #666;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.social-btn:hover {
+    border-color: #e8490a;
+    color: #e8490a;
+}
+
+.social-btn svg {
+    width: 15px;
+    height: 15px;
+}
+
+.main-header {
+    position: fixed;
+    top: 41px;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    padding: 0;
+}
+
+.main-header__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+}
+
+.logo {
+    font-family: 'Raleway', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #1a1a1a;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    list-style: none;
+}
+
+.main-nav__link {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: #444;
+    text-decoration: none;
+    letter-spacing: 0.3px;
+    position: relative;
+    padding-bottom: 3px;
+    transition: color 0.2s;
+}
+
+.main-nav__link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #e8490a;
+    transition: width 0.25s ease;
+}
+
+.main-nav__link:hover {
+    color: #e8490a;
+}
+
+.main-nav__link:hover::after {
+    width: 100%;
+}
+
+.main-nav__link.active {
+    color: #e8490a;
+}
+
+.main-nav__link.active::after {
+    width: 100%;
+}
+
+.hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.hamburger span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: #333;
+    border-radius: 2px;
+    transition: transform 0.3s, opacity 0.3s;
+}
+
+@media (max-width: 768px) {
+    .top-bar__contacts {
+        gap: 16px;
+    }
+
+    .top-bar__contact-item span {
+        display: none;
+    }
+
+    .hamburger {
+        display: flex;
+    }
+
+    .main-nav {
+        display: none;
+        position: fixed;
+        top: 109px;
+        left: 0;
+        right: 0;
+        background: #fff;
+        flex-direction: column;
+        gap: 0;
+        border-top: 2px solid #e8490a;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+        z-index: 998;
+    }
+
+    .main-nav.open {
+        display: flex;
+    }
+
+    .main-nav li {
+        width: 100%;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .main-nav__link {
+        display: block;
+        padding: 14px 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .top-bar__socials {
+        display: none;
+    }
+}

@@ -5,3 +5,20 @@
     border-radius: 10px;
     margin-top: 10px;
 }
+    .container {
+        width: 100%;
+        max-width: 800px; 
+        margin: 0 auto;
+    }
+
+    .form-card {
+        width: 100%;
+        background: #fff;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+    .form-group input {
+        width: 100%;
+        box-sizing: border-box;
+    }

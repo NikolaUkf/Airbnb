@@ -1,0 +1,15 @@
+    .properties-box .item {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .properties-box .item img {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+    }
+
+    .properties-box .col-lg-4 {
+        display: flex;
+    }

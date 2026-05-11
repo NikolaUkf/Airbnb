@@ -11,88 +11,18 @@
 
     <!-- Bootstrap core CSS -->
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="navbar/navbar.css">
-
-
     <!-- Additional CSS Files -->
     <link rel="stylesheet" href="assets/css/fontawesome.css">
     <link rel="stylesheet" href="assets/css/templatemo-villa-agency.css">
     <link rel="stylesheet" href="assets/css/owl.css">
     <link rel="stylesheet" href="assets/css/animate.css">
     <link rel="stylesheet"href="https://unpkg.com/swiper@7/swiper-bundle.min.css"/>
-    <link rel="stylesheet" href="assets/css/login.css">
-    <link rel="stylesheet" href="assets/css/reviews.css">
+    
   </head>
 
 <body>
 
-  <!-- ***** Preloader Start ***** -->
-  <div id="js-preloader" class="js-preloader">
-    <div class="preloader-inner">
-      <span class="dot"></span>
-      <div class="dots">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </div>
-  </div>
-  <!-- ***** Preloader End ***** -->
-
-  <div class="sub-header">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-8 col-md-8">
-          <ul class="info">
-            <li><i class="fa fa-envelope"></i> info@company.com</li>
-            <li><i class="fa fa-map"></i> Sunny Isles Beach, FL 33160</li>
-          </ul>
-        </div>
-        <div class="col-lg-4 col-md-4">
-          <ul class="social-links">
-            <li><a href="#"><i class="fab fa-facebook"></i></a></li>
-            <li><a href="https://x.com/minthu" target="_blank"><i class="fab fa-twitter"></i></a></li>
-            <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
-            <li><a href="#"><i class="fab fa-instagram"></i></a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ***** Header Area Start ***** -->
-  <header class="header-area header-sticky">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-            <nav class="main-nav">
-              <!-- Logo -->
-              <a href="index.php" class="logo">
-                <h1>Villa</h1>
-              </a>
-              
-              <!-- Menu -->
-              <nav>
-                  <ul class="nav-links">
-                      <li><a href="#domov" class="active">Domov</a></li>
-                      <li><a href="properties.php">Akomodácie</a></li>
-                      <li><a href="contact.php">Kontakt</a></li>
-                      <li><a href="reservation_system/index.php">Rezervácia</a> </li>
-                      <li><a href="login_system/login.php">Prihlásenie</a></li>
-                  </ul>
-              </nav>
-              
-              <!-- Admin Login Icon (Right Side) -->
-              
-              <!-- Mobile Menu Trigger -->
-              <a class='menu-trigger'>
-                <span>Menu</span>
-              </a>
-            </nav>
-            </div>
-        </div>
-    </div>
-  </header>
+<?php include 'partials/head.php'; ?>
   <!-- ***** Header Area End ***** -->
 
   <div class="main-banner">
@@ -301,7 +231,7 @@
                       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, do eiusmod tempor pack incididunt ut labore et dolore magna aliqua quised ipsum suspendisse. 
                       <br><br>Keď potrebujete bezplatné CSS šablóny, môžete jednoducho napísať TemplateMo do akejkoľvek vyhľadávacej stránky. Okrem toho môžete napísať TemplateMo Portfolio, TemplateMo One Page Layouts atď.</p>
                       <div class="icon-button">
-                        <a href="property-details.html"><i class="fa fa-calendar"></i> Dohodnúť si návštevu</a>
+                        <a href="properties.php"><i class="fa fa-calendar"></i> Dohodnúť si návštevu</a>
                       </div>
                     </div>
                   </div>
@@ -326,7 +256,7 @@
                       <h4>Podrobné informácie o vile</h4>
                       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, do eiusmod tempor pack incididunt ut labore et dolore magna aliqua quised ipsum suspendisse. <br><br>Swag fanny pack lyft blog twee. JOMO ethical copper mug, succulents typewriter shaman DIY kitsch twee taiyaki fixie hella venmo after messenger poutine next level humblebrag swag franzen.</p>
                       <div class="icon-button">
-                        <a href="property-details.html"><i class="fa fa-calendar"></i> Dohodnúť si návštevu</a>
+                        <a href="properties.php"><i class="fa fa-calendar"></i> Dohodnúť si návštevu</a>
                       </div>
                     </div>
                   </div>
@@ -351,7 +281,7 @@
                       <h4>Ďalšie informácie o Penthause</h4>
                       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, do eiusmod tempor pack incididunt ut labore et dolore magna aliqua quised ipsum suspendisse. <br><br>Swag fanny pack lyft blog twee. JOMO ethical copper mug, succulents typewriter shaman DIY kitsch twee taiyaki fixie hella venmo after messenger poutine next level humblebrag swag franzen.</p>
                       <div class="icon-button">
-                        <a href="property-details.html"><i class="fa fa-calendar"></i> Dohodnúť si návštevu</a>
+                        <a href="properties.php"><i class="fa fa-calendar"></i> Dohodnúť si návštevu</a>
                       </div>
                     </div>
                   </div>
@@ -366,16 +296,7 @@
 
 
 
-  <footer>
-    <div class="container">
-      <div class="col-lg-8">
-        <p>Copyright © 2048 Villa Agency Co., Ltd. Všetky práva vyhradené. 
-        
-        Dizajn: <a rel="nofollow" href="https://templatemo.com" target="_blank">TemplateMo</a></p>
-      </div>
-    </div>
-
-  </footer>
+<?php include 'partials/footer.php'; ?>
 
   <!-- Scripts -->
   <!-- Bootstrap core JavaScript -->

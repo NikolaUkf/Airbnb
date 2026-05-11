@@ -1,0 +1,52 @@
+.container {
+    padding: 30px 40px;
+    max-width: 800px;
+}
+
+.message-card {
+    background: white;
+    padding: 20px 25px;
+    margin: 0 0 16px 0;
+    border-radius: 10px;
+    border-left: 4px solid #ff5a3c;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.message-card h5 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.message-card p {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 6px;
+}
+
+.message-card small {
+    font-size: 12px;
+    color: #999;
+    display: block;
+    margin-top: 10px;
+}
+
+.badge {
+    background: #fff3cd;
+    color: #856404;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.empty {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+    font-size: 14px;
+}

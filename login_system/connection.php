@@ -3,18 +3,17 @@
 $conn = "";
  
 try {
-    $servername = "localhost";
-    $dbname = "villa_agency";
-    $username = "root";
-    $password = "";
+    $db_server = "localhost";
+    $db_name = "villa_agency";
+    $db_user = "root";
+    $db_pass = "";
  
     $conn = new PDO(
-        "mysql:host=$servername;dbname=villa_agency",
-        $username, $password
+        "mysql:host=$db_server;dbname=$db_name",
+        $db_user, $db_pass
     );
     
-   $conn->setAttribute(PDO::ATTR_ERRMODE,
-                    PDO::ERRMODE_EXCEPTION);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 }
 catch(PDOException $e) {
     echo "Connection failed: " . $e->getMessage();

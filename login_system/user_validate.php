@@ -1,44 +1,76 @@
 <?php
 include_once($_SERVER['DOCUMENT_ROOT'] . '/Airbnb/login_system/connection.php');
 
-function test_input($data) {
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
-    return $data;
+class InputSanitizer
+{
+    public function clean(string $data): string
+    {
+        return htmlspecialchars(stripslashes(trim($data)));
+    }
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+class AuthRepository
+{
+    private PDO $conn;
 
-    $username = test_input($_POST["username"]);
-    $password = $_POST["password"];
-
-    // Najprv skontroluj admina
-    $stmt = $conn->prepare("SELECT * FROM adminlogin WHERE username = ?");
-    $stmt->execute([$username]);
-    $admin = $stmt->fetch();
-
-    if ($admin && password_verify($password, $admin['password'])) {
-        $_SESSION['admin'] = $admin['username'];
-        header("Location: ../create_property/create.php");
-        exit();
+    public function __construct(PDO $conn)
+    {
+        $this->conn = $conn;
     }
 
-    // Potom skontroluj bežného užívateľa
-    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
-    $stmt->execute([$username]);
-    $user = $stmt->fetch();
-
-    if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['user_id']       = $user['id'];
-        $_SESSION['user_username'] = $user['username'];
-        $_SESSION['user_email']    = $user['email'];
-        header("Location: ../index.php");
-        exit();
+    public function findAdmin(string $username): ?array
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM adminlogin WHERE username = ?");
+        $stmt->execute([$username]);
+        return $stmt->fetch() ?: null;
     }
 
-    // Ani jedno nesedí
-    header("Location: login.php?error=1");
-    exit();
+    public function findUser(string $username): ?array
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        return $stmt->fetch() ?: null;
+    }
 }
-?>
+
+class AuthController
+{
+    private AuthRepository $repository;
+    private InputSanitizer $sanitizer;
+
+    public function __construct(AuthRepository $repository, InputSanitizer $sanitizer)
+    {
+        $this->repository = $repository;
+        $this->sanitizer  = $sanitizer;
+    }
+
+    public function handle(): void
+    {
+        if ($_SERVER["REQUEST_METHOD"] !== "POST") return;
+
+        $username = $this->sanitizer->clean($_POST["username"] ?? '');
+        $password = $_POST["password"] ?? '';
+
+        $admin = $this->repository->findAdmin($username);
+        if ($admin && password_verify($password, $admin['password'])) {
+            $_SESSION['admin'] = $admin['username'];
+            header("Location: ../create_property/create.php");
+            exit();
+        }
+
+        $user = $this->repository->findUser($username);
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['user_id']       = $user['id'];
+            $_SESSION['user_username'] = $user['username'];
+            $_SESSION['user_email']    = $user['email'];
+            header("Location: ../index.php");
+            exit();
+        }
+
+        header("Location: login.php?error=1");
+        exit();
+    }
+}
+
+$controller = new AuthController(new AuthRepository($conn), new InputSanitizer());
+$controller->handle();

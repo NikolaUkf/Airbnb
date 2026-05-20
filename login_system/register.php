@@ -2,47 +2,96 @@
 session_start();
 include_once('connection.php');
 
-$errors = [];
-$success = false;
+class RegistrationValidator
+{
+    private array $errors = [];
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    
-    $username = trim($_POST["username"]);
-    $email    = trim($_POST["email"]);
-    $password = $_POST["password"];
-    $confirm  = $_POST["confirm_password"];
+    public function validate(string $username, string $email, string $password, string $confirm): bool
+    {
+        $this->errors = [];
 
-    // Validácia
-    if (empty($username)) {
-        $errors[] = "Zadajte užívateľské meno.";
-    }
-    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "Zadajte platný email.";
-    }
-    if (strlen($password) < 6) {
-        $errors[] = "Heslo musí mať aspoň 6 znakov.";
-    }
-    if ($password !== $confirm) {
-        $errors[] = "Heslá sa nezhodujú.";
-    }
-
-    // Skontroluj či username alebo email už existuje
-    if (empty($errors)) {
-        $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
-        $stmt->execute([$username, $email]);
-        if ($stmt->fetch()) {
-            $errors[] = "Užívateľské meno alebo email už existuje.";
+        if (empty($username)) {
+            $this->errors[] = "Zadajte užívateľské meno.";
         }
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->errors[] = "Zadajte platný email.";
+        }
+        if (strlen($password) < 6) {
+            $this->errors[] = "Heslo musí mať aspoň 6 znakov.";
+        }
+        if ($password !== $confirm) {
+            $this->errors[] = "Heslá sa nezhodujú.";
+        }
+
+        return empty($this->errors);
     }
 
-    // Vlož do databázy
-    if (empty($errors)) {
+    public function getErrors(): array { return $this->errors; }
+    public function addError(string $error): void { $this->errors[] = $error; }
+}
+
+class UserRepository
+{
+    private PDO $conn;
+
+    public function __construct(PDO $conn)
+    {
+        $this->conn = $conn;
+    }
+
+    public function exists(string $username, string $email): bool
+    {
+        $stmt = $this->conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+        $stmt->execute([$username, $email]);
+        return (bool) $stmt->fetch();
+    }
+
+    public function create(string $username, string $email, string $password): bool
+    {
         $hashed = password_hash($password, PASSWORD_BCRYPT);
-        $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-        $stmt->execute([$username, $email, $hashed]);
-        $success = true;
+        $stmt   = $this->conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+        return $stmt->execute([$username, $email, $hashed]);
     }
 }
+
+class RegistrationController
+{
+    private RegistrationValidator $validator;
+    private UserRepository $repository;
+    private bool $success = false;
+
+    public function __construct(RegistrationValidator $validator, UserRepository $repository)
+    {
+        $this->validator  = $validator;
+        $this->repository = $repository;
+    }
+
+    public function handle(): void
+    {
+        if ($_SERVER["REQUEST_METHOD"] !== "POST") return;
+
+        $username = trim($_POST["username"] ?? '');
+        $email    = trim($_POST["email"]    ?? '');
+        $password = $_POST["password"]        ?? '';
+        $confirm  = $_POST["confirm_password"] ?? '';
+
+        if (!$this->validator->validate($username, $email, $password, $confirm)) return;
+
+        if ($this->repository->exists($username, $email)) {
+            $this->validator->addError("Užívateľské meno alebo email už existuje.");
+            return;
+        }
+
+        $this->repository->create($username, $email, $password);
+        $this->success = true;
+    }
+
+    public function isSuccess(): bool { return $this->success; }
+    public function getErrors(): array { return $this->validator->getErrors(); }
+}
+
+$controller = new RegistrationController(new RegistrationValidator(), new UserRepository($conn));
+$controller->handle();
 ?>
 <!DOCTYPE html>
 <html lang="sk">
@@ -54,15 +103,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <link rel="stylesheet" href="login.css">
 </head>
 <body>
-<?php
-require_once '../partials/head.php';
-?>
+<?php require_once '../partials/head.php'; ?>
   <main>
     <div class="card">
       <h1>Registrácia</h1>
       <p class="subtitle">Vytvorte si účet</p>
 
-      <?php if ($success): ?>
+      <?php if ($controller->isSuccess()): ?>
         <div class="error-msg" id="errorMsg" role="alert" style="background: #e6f4ea; color: #2d7a3a; border-color: #2d7a3a;">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/>
@@ -72,14 +119,14 @@ require_once '../partials/head.php';
         </div>
       <?php endif; ?>
 
-      <?php if (!empty($errors)): ?>
+      <?php if (!empty($controller->getErrors())): ?>
         <div class="error-msg" id="errorMsg" role="alert">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/>
             <line x1="8" y1="4.5" x2="8" y2="8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
             <circle cx="8" cy="11" r=".85" fill="currentColor"/>
           </svg>
-          <span><?php echo $errors[0]; ?></span>
+          <span><?php echo htmlspecialchars($controller->getErrors()[0]); ?></span>
         </div>
       <?php endif; ?>
 

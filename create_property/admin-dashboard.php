@@ -2,11 +2,55 @@
 session_start();
 include 'config.php';
 
-$total = $conn->query("SELECT COUNT(*) FROM properties")->fetchColumn();
-$avgPrice = (float)$conn->query("SELECT AVG(price) FROM properties")->fetchColumn();
+class PropertyDashboardRepository
+{
+    private PDO $conn;
 
-$stmt = $conn->query("SELECT * FROM properties ORDER BY id DESC");
-$properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    public function __construct(PDO $conn)
+    {
+        $this->conn = $conn;
+    }
+
+    public function getTotal(): int
+    {
+        return (int) $this->conn->query("SELECT COUNT(*) FROM properties")->fetchColumn();
+    }
+
+    public function getAveragePrice(): float
+    {
+        return (float) $this->conn->query("SELECT AVG(price) FROM properties")->fetchColumn();
+    }
+
+    public function getAll(): array
+    {
+        return $this->conn->query("SELECT * FROM properties ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+    }
+}
+
+class DashboardView
+{
+    public function getImagePath(array $row): string
+    {
+        $path = "uploads/" . $row['image'];
+        return file_exists(__DIR__ . "/uploads/" . $row['image']) ? $path : "uploads/default.png";
+    }
+
+    public function getUserLabel(): string
+    {
+        return isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : 'Používateľ';
+    }
+
+    public function getUserAvatar(): string
+    {
+        return isset($_SESSION['email']) ? strtoupper(substr($_SESSION['email'], 0, 1)) : 'A';
+    }
+}
+
+$repository = new PropertyDashboardRepository($conn);
+$total      = $repository->getTotal();
+$avgPrice   = $repository->getAveragePrice();
+$properties = $repository->getAll();
+$view       = new DashboardView();
 ?>
 <!DOCTYPE html>
 <html lang="sk">
@@ -26,11 +70,11 @@ $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <h2>Dashboard</h2>
             <div class="user-info">
                 <div class="user-info-text">
-                    <p><?php echo isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : 'Používateľ'; ?></p>
+                    <p><?php echo $view->getUserLabel(); ?></p>
                     <p>Administrator</p>
                 </div>
                 <div class="user-avatar">
-                    <?php echo isset($_SESSION['email']) ? strtoupper(substr($_SESSION['email'], 0, 1)) : 'A'; ?>
+                    <?php echo $view->getUserAvatar(); ?>
                 </div>
             </div>
         </div>
@@ -48,7 +92,7 @@ $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 <div class="card">
                     <h3>Priemerná cena</h3>
-                    <p>€<?php echo number_format((float)$avgPrice, 0, ',', ' '); ?></p>
+                    <p>€<?php echo number_format($avgPrice, 0, ',', ' '); ?></p>
                 </div>
             </div>
 
@@ -61,14 +105,8 @@ $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <th>Akcie</th>
                 </tr>
                 <?php foreach ($properties as $row): ?>
-                <?php
-                $img = "uploads/" . $row['image'];
-                if (!file_exists(__DIR__ . "/uploads/" . $row['image'])) {
-                    $img = "uploads/default.png";
-                }
-                ?>
                 <tr>
-                    <td><img src="<?php echo htmlspecialchars($img); ?>"></td>
+                    <td><img src="<?php echo htmlspecialchars($view->getImagePath($row)); ?>"></td>
                     <td><?php echo htmlspecialchars($row['title']); ?></td>
                     <td>€<?php echo number_format($row['price'], 0, ',', ' '); ?></td>
                     <td><?php echo htmlspecialchars($row['address']); ?></td>

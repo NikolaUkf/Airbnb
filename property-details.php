@@ -1,50 +1,119 @@
 <?php
 include 'create_property/config.php';
 
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+class PropertyDetailRepository
+{
+    private PDO $conn;
 
-if (!$id) {
-    header('Location: properties.php');
-    exit;
-}
+    public function __construct(PDO $conn)
+    {
+        $this->conn = $conn;
+    }
 
-$stmt = $conn->prepare("SELECT * FROM properties WHERE id = ?");
-$stmt->execute([$id]);
-$property = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$property) {
-    header('Location: properties.php');
-    exit;
-}
-
-$message = '';
-$messageType = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reserve'])) {
-    $name     = trim($_POST['name'] ?? '');
-    $email    = trim($_POST['email'] ?? '');
-    $phone    = trim($_POST['phone'] ?? '');
-    $datefrom = trim($_POST['date_from'] ?? '');
-    $dateto   = trim($_POST['date_to'] ?? '');
-    $msg      = trim($_POST['message'] ?? '');
-
-    if (empty($name) || empty($email) || empty($datefrom) || empty($dateto)) {
-        $message = 'Vyplňte všetky povinné polia.';
-        $messageType = 'error';
-    } elseif ($dateto <= $datefrom) {
-        $message = 'Dátum odchodu musí byť po dátume príchodu.';
-        $messageType = 'error';
-    } else {
-        $stmt2 = $conn->prepare("INSERT INTO reservations 
-            (property_id, name, email, phone, date_from, date_to, message) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt2->execute([$id, $name, $email, $phone, $datefrom, $dateto, $msg]);
-        $message = 'Rezervácia bola úspešne odoslaná!';
-        $messageType = 'success';
+    public function findById(int $id): ?array
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM properties WHERE id = ?");
+        $stmt->execute([$id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: null;
     }
 }
 
-$types = ['villa' => 'Villa', 'apartment' => 'Apartmán', 'penthouse' => 'Penthouse'];
+class ReservationRepository
+{
+    private PDO $conn;
+
+    public function __construct(PDO $conn)
+    {
+        $this->conn = $conn;
+    }
+
+    public function save(int $propertyId, string $name, string $email, string $phone, string $dateFrom, string $dateTo, string $message): bool
+    {
+        $stmt = $this->conn->prepare("INSERT INTO reservations 
+            (property_id, name, email, phone, date_from, date_to, message) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)");
+        return $stmt->execute([$propertyId, $name, $email, $phone, $dateFrom, $dateTo, $message]);
+    }
+}
+
+class ReservationValidator
+{
+    private string $error = '';
+
+    public function validate(array $data): bool
+    {
+        if (empty($data['name']) || empty($data['email']) || empty($data['date_from']) || empty($data['date_to'])) {
+            $this->error = 'Vyplňte všetky povinné polia.';
+            return false;
+        }
+        if ($data['date_to'] <= $data['date_from']) {
+            $this->error = 'Dátum odchodu musí byť po dátume príchodu.';
+            return false;
+        }
+        return true;
+    }
+
+    public function getError(): string
+    {
+        return $this->error;
+    }
+}
+
+class ReservationController
+{
+    private ReservationValidator $validator;
+    private ReservationRepository $repository;
+    private string $message = '';
+    private string $messageType = '';
+
+    public function __construct(ReservationValidator $validator, ReservationRepository $repository)
+    {
+        $this->validator  = $validator;
+        $this->repository = $repository;
+    }
+
+    public function handle(int $propertyId): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['reserve'])) return;
+
+        $data = [
+            'name'      => trim($_POST['name']      ?? ''),
+            'email'     => trim($_POST['email']     ?? ''),
+            'phone'     => trim($_POST['phone']     ?? ''),
+            'date_from' => trim($_POST['date_from'] ?? ''),
+            'date_to'   => trim($_POST['date_to']   ?? ''),
+            'message'   => trim($_POST['message']   ?? ''),
+        ];
+
+        if (!$this->validator->validate($data)) {
+            $this->message     = $this->validator->getError();
+            $this->messageType = 'error';
+            return;
+        }
+
+        $this->repository->save($propertyId, $data['name'], $data['email'], $data['phone'], $data['date_from'], $data['date_to'], $data['message']);
+        $this->message     = 'Rezervácia bola úspešne odoslaná!';
+        $this->messageType = 'success';
+    }
+
+    public function getMessage(): string { return $this->message; }
+    public function getMessageType(): string { return $this->messageType; }
+}
+
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+if (!$id) { header('Location: properties.php'); exit; }
+
+$propertyRepo = new PropertyDetailRepository($conn);
+$property     = $propertyRepo->findById($id);
+if (!$property) { header('Location: properties.php'); exit; }
+
+$controller = new ReservationController(new ReservationValidator(), new ReservationRepository($conn));
+$controller->handle($id);
+
+$message     = $controller->getMessage();
+$messageType = $controller->getMessageType();
+$types       = ['villa' => 'Villa', 'apartment' => 'Apartmán', 'penthouse' => 'Penthouse'];
 ?>
 <!DOCTYPE html>
 <html lang="sk">
@@ -60,10 +129,6 @@ $types = ['villa' => 'Villa', 'apartment' => 'Apartmán', 'penthouse' => 'Pentho
     <link rel="stylesheet" href="assets/css/animate.css">
     <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="assets/css/properties-details.css">
-
-<style>
-
-</style>
 </head>
 <body>
 

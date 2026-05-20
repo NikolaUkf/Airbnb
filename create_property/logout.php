@@ -1,12 +1,15 @@
 <?php
-session_start();
 
-// vymaže všetky session premenné
-session_unset();
+class Logout
+{
+    public function handle(): void
+    {
+        session_start();
+        session_unset();
+        session_destroy();
+        header("Location: ../login_system/login.php");
+        exit;
+    }
+}
 
-// zničí session
-session_destroy();
-
-// presmerovanie na login
-header("Location: ../login_system/login.php");
-exit;
+(new Logout())->handle();

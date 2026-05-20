@@ -2,81 +2,175 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'villa_agency');
-define('FROM_EMAIL', 'noreply@villa.co');
-
-function sanitizeInput($input) {
-    return trim(htmlspecialchars($input, ENT_QUOTES, 'UTF-8'));
+class Config
+{
+    const DB_HOST   = 'localhost';
+    const DB_USER   = 'root';
+    const DB_PASS   = '';
+    const DB_NAME   = 'villa_agency';
+    const FROM_EMAIL = 'noreply@villa.co';
 }
 
-function isValidEmail($email) {
-    return filter_var($email, FILTER_VALIDATE_EMAIL);
-}
+class Database
+{
+    private static ?Database $instance = null;
+    private mysqli $connection;
 
-$response = array('success' => false, 'message' => '');
+    private function __construct()
+    {
+        $this->connection = new mysqli(
+            Config::DB_HOST,
+            Config::DB_USER,
+            Config::DB_PASS,
+            Config::DB_NAME
+        );
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    header('Content-Type: application/json');
-
-    try {
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-
-        if ($conn->connect_error) {
-            $response['message'] = 'DB chyba: ' . $conn->connect_error;
-            echo json_encode($response);
-            exit;
+        if ($this->connection->connect_error) {
+            throw new RuntimeException('DB chyba: ' . $this->connection->connect_error);
         }
 
-        $conn->set_charset('utf8mb4');
-
-        $name       = sanitizeInput($_POST['name']    ?? '');
-        $email      = sanitizeInput($_POST['email']   ?? '');
-        $subject    = sanitizeInput($_POST['subject'] ?? '');
-        $message    = sanitizeInput($_POST['message'] ?? '');
-        $ip_address = $_SERVER['REMOTE_ADDR'];
-
-        if (empty($name)) {
-            $response['message'] = 'Meno je povinné.';
-        } elseif (empty($email) || !isValidEmail($email)) {
-            $response['message'] = 'Zadaj platnú emailovú adresu.';
-        } elseif (empty($message)) {
-            $response['message'] = 'Správa je povinná.';
-        } else {
-            $stmt = $conn->prepare(
-                "INSERT INTO contact_messages (name, email, subject, message, ip_address)
-                 VALUES (?, ?, ?, ?, ?)"
-            );
-
-            if (!$stmt) {
-                $response['message'] = 'Prepare zlyhalo: ' . $conn->error;
-                echo json_encode($response);
-                exit;
-            }
-
-            $stmt->bind_param("sssss", $name, $email, $subject, $message, $ip_address);
-
-            if ($stmt->execute()) {
-                $response['success'] = true;
-                $response['message'] = 'Správa odoslaná!';
-            } else {
-                $response['message'] = 'Execute zlyhalo: ' . $stmt->error;
-            }
-
-            $stmt->close();
-        }
-
-        $conn->close();
-
-    } catch (Exception $e) {
-        $response['message'] = 'Chyba: ' . $e->getMessage();
-        error_log('Contact form error: ' . $e->getMessage());
+        $this->connection->set_charset('utf8mb4');
     }
 
-    echo json_encode($response);
+    public static function getInstance(): self
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    public function getConnection(): mysqli
+    {
+        return $this->connection;
+    }
+}
+
+class Validator
+{
+    private array $errors = [];
+
+    public function sanitize(string $input): string
+    {
+        return trim(htmlspecialchars($input, ENT_QUOTES, 'UTF-8'));
+    }
+
+    public function isValidEmail(string $email): bool
+    {
+        return (bool) filter_var($email, FILTER_VALIDATE_EMAIL);
+    }
+
+    public function validate(array $data): bool
+    {
+        $this->errors = [];
+
+        if (empty($data['name'])) {
+            $this->errors[] = 'Meno je povinné.';
+        }
+
+        if (empty($data['email']) || !$this->isValidEmail($data['email'])) {
+            $this->errors[] = 'Zadaj platnú emailovú adresu.';
+        }
+
+        if (empty($data['message'])) {
+            $this->errors[] = 'Správa je povinná.';
+        }
+
+        return empty($this->errors);
+    }
+
+    public function getFirstError(): string
+    {
+        return $this->errors[0] ?? '';
+    }
+}
+
+class ContactMessageRepository
+{
+    private mysqli $db;
+
+    public function __construct(Database $database)
+    {
+        $this->db = $database->getConnection();
+    }
+
+    public function save(string $name, string $email, string $subject, string $message, string $ip): bool
+    {
+        $stmt = $this->db->prepare(
+            "INSERT INTO contact_messages (name, email, subject, message, ip_address)
+             VALUES (?, ?, ?, ?, ?)"
+        );
+
+        if (!$stmt) {
+            throw new RuntimeException('Prepare zlyhalo: ' . $this->db->error);
+        }
+
+        $stmt->bind_param('sssss', $name, $email, $subject, $message, $ip);
+        $result = $stmt->execute();
+
+        if (!$result) {
+            throw new RuntimeException('Execute zlyhalo: ' . $stmt->error);
+        }
+
+        $stmt->close();
+        return true;
+    }
+}
+
+class ContactFormController
+{
+    private Validator $validator;
+    private ContactMessageRepository $repository;
+
+    public function __construct(Validator $validator, ContactMessageRepository $repository)
+    {
+        $this->validator   = $validator;
+        $this->repository  = $repository;
+    }
+
+    public function handle(): void
+    {
+        header('Content-Type: application/json');
+        $response = ['success' => false, 'message' => ''];
+
+        try {
+            $name    = $this->validator->sanitize($_POST['name']    ?? '');
+            $email   = $this->validator->sanitize($_POST['email']   ?? '');
+            $subject = $this->validator->sanitize($_POST['subject'] ?? '');
+            $message = $this->validator->sanitize($_POST['message'] ?? '');
+            $ip      = $_SERVER['REMOTE_ADDR'];
+
+            if (!$this->validator->validate(compact('name', 'email', 'message'))) {
+                $response['message'] = $this->validator->getFirstError();
+                echo json_encode($response);
+                return;
+            }
+
+            $this->repository->save($name, $email, $subject, $message, $ip);
+
+            $response['success'] = true;
+            $response['message'] = 'Správa odoslaná!';
+
+        } catch (Exception $e) {
+            $response['message'] = 'Chyba: ' . $e->getMessage();
+            error_log('Contact form error: ' . $e->getMessage());
+        }
+
+        echo json_encode($response);
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $database   = Database::getInstance();
+        $validator  = new Validator();
+        $repository = new ContactMessageRepository($database);
+        $controller = new ContactFormController($validator, $repository);
+        $controller->handle();
+    } catch (Exception $e) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Chyba: ' . $e->getMessage()]);
+    }
     exit;
 }
 ?>
@@ -121,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h6>Kontaktujte nás</h6>
                     <h2>Skontaktujte našich agentov</h2>
                 </div>
-                <p>V prípade akýchkoľvek otázok nás neváhajte skontaktovať. Naši PR pracovníci vám s radosťou poradia. Napíšte nám, aké máte pocity pri používanú našej stránky.</p>
+                <p>V prípade akýchkoľvek otázok nás neváhajte skontaktovať. Naši PR pracovníci vám s radosťou poradia. Napíšte nám, aké máte pocity pri používaní našej stránky.</p>
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="item phone">

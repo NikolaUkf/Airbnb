@@ -1,14 +1,15 @@
 <?php
+session_start();
 include 'config.php';
 
-class PropertyDeleteRepository
-{
-    private PDO $conn;
+if (empty($_SESSION['admin'])) {
+    header('Location: ../login_system/login.php');
+    exit;
+}
 
-    public function __construct(PDO $conn)
-    {
-        $this->conn = $conn;
-    }
+class PropertyRepository
+{
+    public function __construct(private PDO $conn) {}
 
     public function findImageById(int $id): ?string
     {
@@ -27,17 +28,13 @@ class PropertyDeleteRepository
 
 class PropertyDeleteController
 {
-    private PropertyDeleteRepository $repository;
-
-    public function __construct(PropertyDeleteRepository $repository)
-    {
-        $this->repository = $repository;
-    }
+    public function __construct(private PropertyRepository $repository) {}
 
     public function handle(): void
     {
         if (empty($_GET['id'])) {
-            die("Error: No ID provided");
+            header('Location: read.php');
+            exit;
         }
 
         $id = (int) $_GET['id'];
@@ -46,7 +43,8 @@ class PropertyDeleteController
             $image = $this->repository->findImageById($id);
 
             if ($image === null) {
-                die("Error: Property not found");
+                header('Location: read.php');
+                exit;
             }
 
             $fullPath = __DIR__ . "/uploads/" . $image;
@@ -56,14 +54,18 @@ class PropertyDeleteController
 
             $this->repository->deleteById($id);
 
-            header("Location: admin-dashboard.php");
-            exit();
+            $_SESSION['flash'] = 'Inzerát bol úspešne vymazaný.';
+            header('Location: read.php');
+            exit;
 
         } catch (PDOException $e) {
-            die("Database Error: " . $e->getMessage());
+            error_log($e->getMessage());
+            $_SESSION['flash_error'] = 'Chyba databázy. Skúste to znova.';
+            header('Location: read.php');
+            exit;
         }
     }
 }
 
-$controller = new PropertyDeleteController(new PropertyDeleteRepository($conn));
+$controller = new PropertyDeleteController(new PropertyRepository($conn));
 $controller->handle();

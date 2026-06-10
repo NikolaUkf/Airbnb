@@ -1,48 +1,55 @@
 <?php
 session_start();
+include 'config.php'; // DB spojenie cez PDO — konzistentné so zvyškom projektu
 
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'villa_agency');
+if (empty($_SESSION['admin'])) {
+    header('Location: ../login_system/login.php');
+    exit;
+}
 
 class MessageManager
 {
-    private mysqli $conn;
+    private PDO $conn;
 
-    public function __construct()
+    public function __construct(PDO $conn)
     {
-        $this->conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-
-        if ($this->conn->connect_error) {
-            die("Chyba pripojenia: " . $this->conn->connect_error);
-        }
+        $this->conn = $conn;
     }
 
+  
     public function markAllAsRead(): void
     {
-        $this->conn->query("UPDATE contact_messages SET status = 'read' WHERE status = 'new'");
+        $stmt = $this->conn->prepare("UPDATE contact_messages SET status = 'read' WHERE status = 'new'");
+        $stmt->execute();
     }
 
     public function getAll(): array
     {
-        $result = $this->conn->query("SELECT * FROM contact_messages ORDER BY created_at DESC");
-        return $result->fetch_all(MYSQLI_ASSOC);
-    }
-
-    public function __destruct()
-    {
-        $this->conn->close();
+        $stmt = $this->conn->prepare("
+            SELECT id, name, email, subject, message, status, created_at
+            FROM contact_messages
+            ORDER BY created_at DESC
+        ");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 
-$manager = new MessageManager();
-$manager->markAllAsRead();
+$manager = new MessageManager($conn);
+
+
+if (isset($_POST['mark_read'])) {
+    $manager->markAllAsRead();
+    header('Location: view_messages.php');
+    exit;
+}
+
 $messages = $manager->getAll();
+$unreadCount = count(array_filter($messages, fn($m) => $m['status'] === 'new'));
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="sk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -57,25 +64,42 @@ $messages = $manager->getAll();
 
 <div class="main-content">
     <div class="top-bar">
-        <h2>Správy z kontaktného formulára</h2>
+        <h2>
+            Správy z kontaktného formulára
+            <?php if ($unreadCount > 0): ?>
+                <span class="badge badge-new"><?php echo $unreadCount; ?> nových</span>
+            <?php endif; ?>
+        </h2>
         <div class="user-info">
             <div class="user-info-text">
-                <p><?php echo isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : 'Používateľ'; ?></p>
+                <p><?php echo htmlspecialchars($_SESSION['admin']); ?></p>
                 <p>Administrator</p>
             </div>
             <div class="user-avatar">
-                <?php echo isset($_SESSION['email']) ? strtoupper(substr($_SESSION['email'], 0, 1)) : 'A'; ?>
+                <?php echo strtoupper(substr($_SESSION['admin'], 0, 1)); ?>
             </div>
         </div>
     </div>
 
     <div class="container">
+
+        <?php if ($unreadCount > 0): ?>
+            <!-- Tlačidlo na manuálne označenie — nie automaticky pri načítaní -->
+            <form method="POST" style="margin-bottom: 1rem;">
+                <button type="submit" name="mark_read" class="btn-save">
+                    Označiť všetky ako prečítané
+                </button>
+            </form>
+        <?php endif; ?>
+
         <?php if (!empty($messages)): ?>
             <?php foreach ($messages as $row): ?>
-                <div class="message-card">
+                <div class="message-card <?php echo $row['status'] === 'new' ? 'message-card--new' : ''; ?>">
                     <h5>
                         <?php echo htmlspecialchars($row['name']); ?>
-                        <span class="badge"><?php echo htmlspecialchars($row['status']); ?></span>
+                        <span class="badge badge-<?php echo htmlspecialchars($row['status']); ?>">
+                            <?php echo $row['status'] === 'new' ? 'Nová' : 'Prečítaná'; ?>
+                        </span>
                     </h5>
                     <p><strong>Email:</strong> <?php echo htmlspecialchars($row['email']); ?></p>
                     <p><strong>Predmet:</strong> <?php echo htmlspecialchars($row['subject']); ?></p>
@@ -83,13 +107,13 @@ $messages = $manager->getAll();
                     <p><?php echo nl2br(htmlspecialchars($row['message'])); ?></p>
                     <small class="text-muted">
                         📅 <?php echo htmlspecialchars($row['created_at']); ?>
-                        | IP: <?php echo htmlspecialchars($row['ip_address']); ?>
                     </small>
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
             <p class="alert alert-info">Zatiaľ nie sú žiadne správy.</p>
         <?php endif; ?>
+
     </div>
 </div>
 

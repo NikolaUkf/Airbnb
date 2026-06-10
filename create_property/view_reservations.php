@@ -2,6 +2,11 @@
 session_start();
 include 'config.php';
 
+if (empty($_SESSION['admin'])) {
+    header('Location: ../login_system/login.php');
+    exit;
+}
+
 class ReservationManager
 {
     private PDO $conn;
@@ -20,24 +25,34 @@ class ReservationManager
     public function getAll(): array
     {
         $stmt = $this->conn->prepare("
-            SELECT r.*, p.title, p.address 
-            FROM reservations r 
-            JOIN properties p ON r.property_id = p.id 
+            SELECT r.id, r.name, r.email, r.phone, r.date_from, r.date_to,
+                   r.message, r.status, r.created_at,
+                   p.title, p.address
+            FROM reservations r
+            JOIN properties p ON r.property_id = p.id
             ORDER BY r.created_at DESC
         ");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function updateStatus(int $id, string $status): void
+    public function updateStatus(int $id, string $status): bool
     {
+ 
+        if (!array_key_exists($status, $this->statuses)) {
+            return false;
+        }
+
         $stmt = $this->conn->prepare("UPDATE reservations SET status = ? WHERE id = ?");
         $stmt->execute([$status, $id]);
+
+
+        return $stmt->rowCount() > 0;
     }
 
     public function getStatusLabel(string $status): string
     {
-        return $this->statuses[$status] ?? $status;
+        return $this->statuses[$status] ?? htmlspecialchars($status);
     }
 
     public function getStatuses(): array
@@ -50,6 +65,7 @@ class ReservationPage
 {
     private ReservationManager $manager;
     private array $reservations;
+    private string $flash = '';
 
     public function __construct(ReservationManager $manager)
     {
@@ -60,32 +76,71 @@ class ReservationPage
 
     private function handlePost(): void
     {
-        if (isset($_POST['update_status'])) {
-            $this->manager->updateStatus((int)$_POST['reservation_id'], $_POST['status']);
-            header('Location: view_reservations.php');
-            exit;
+        if (!isset($_POST['update_status'])) return;
+
+        if (empty($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            $this->flash = 'error:Neplatný CSRF token.';
+            return;
         }
+
+        $id     = (int)($_POST['reservation_id'] ?? 0);
+        $status = $_POST['status'] ?? '';
+
+        if ($id <= 0) {
+            $this->flash = 'error:Neplatné ID rezervácie.';
+            return;
+        }
+
+        $updated = $this->manager->updateStatus($id, $status);
+
+        $_SESSION['flash'] = $updated ? 'success:Stav bol aktualizovaný.' : 'error:Nepodarilo sa aktualizovať stav.';
+        header('Location: view_reservations.php');
+        exit;
+    }
+
+    private function getCsrfToken(): string
+    {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['csrf_token'];
     }
 
     private function getUserEmail(): string
     {
-        return isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : 'Používateľ';
+        return isset($_SESSION['admin']) ? htmlspecialchars($_SESSION['admin']) : 'Admin';
     }
 
     private function getUserAvatar(): string
     {
-        return isset($_SESSION['email']) ? strtoupper(substr($_SESSION['email'], 0, 1)) : 'A';
+        return isset($_SESSION['admin']) ? strtoupper(substr($_SESSION['admin'], 0, 1)) : 'A';
     }
 
-    private function renderStatusSelect(string $current): string
+    private function renderStatusSelect(string $current, int $reservationId): string
     {
-        $html = '<select name="status">';
+        $selectId = 'status-' . $reservationId;
+        $html = "<select name=\"status\" id=\"{$selectId}\" aria-label=\"Stav rezervácie\">";
         foreach ($this->manager->getStatuses() as $value => $label) {
-            $selected = $current === $value ? 'selected' : '';
-            $html .= "<option value=\"{$value}\" {$selected}>{$label}</option>";
+            $selected = $current === $value ? ' selected' : '';
+            // htmlspecialchars na value aj label — obrana pred XSS
+            $safeValue = htmlspecialchars($value);
+            $safeLabel = htmlspecialchars($label);
+            $html .= "<option value=\"{$safeValue}\"{$selected}>{$safeLabel}</option>";
         }
         $html .= '</select>';
         return $html;
+    }
+
+    private function renderFlash(): string
+    {
+        $msg = '';
+        if (!empty($_SESSION['flash'])) {
+            [$type, $text] = explode(':', $_SESSION['flash'], 2);
+            unset($_SESSION['flash']);
+            $safe = htmlspecialchars($text);
+            $msg = "<div class=\"flash flash-{$type}\">{$safe}</div>";
+        }
+        return $msg;
     }
 
     private function renderRows(): string
@@ -94,25 +149,30 @@ class ReservationPage
             return '<div class="empty">Žiadne rezervácie zatiaľ neboli odoslané.</div>';
         }
 
-        $rows = '';
+        $csrf  = $this->getCsrfToken();
+        $rows  = '';
+
         foreach ($this->reservations as $r) {
+            $id          = (int)$r['id']; // int — htmlspecialchars nie je potrebný
             $statusLabel = $this->manager->getStatusLabel($r['status']);
-            $statusSelect = $this->renderStatusSelect($r['status']);
+            $statusClass = htmlspecialchars($r['status']);
+            $statusSelect = $this->renderStatusSelect($r['status'], $id);
 
             $rows .= "
             <tr>
-                <td>{$r['id']}</td>
-                <td>" . htmlspecialchars($r['title']) . "</td>
-                <td>" . htmlspecialchars($r['name']) . "</td>
-                <td>" . htmlspecialchars($r['email']) . "</td>
-                <td>" . htmlspecialchars($r['phone'] ?: '-') . "</td>
-                <td>{$r['date_from']}</td>
-                <td>{$r['date_to']}</td>
-                <td>" . htmlspecialchars($r['message'] ?: '-') . "</td>
-                <td><span class=\"badge badge-{$r['status']}\">{$statusLabel}</span></td>
+                <td>{$id}</td>
+                <td>" . htmlspecialchars($r['title'])               . "</td>
+                <td>" . htmlspecialchars($r['name'])                . "</td>
+                <td>" . htmlspecialchars($r['email'])               . "</td>
+                <td>" . htmlspecialchars($r['phone']    ?: '-')     . "</td>
+                <td>" . htmlspecialchars($r['date_from'])           . "</td>
+                <td>" . htmlspecialchars($r['date_to'])             . "</td>
+                <td>" . htmlspecialchars($r['message']  ?: '-')     . "</td>
+                <td><span class=\"badge badge-{$statusClass}\">{$statusLabel}</span></td>
                 <td>
-                    <form method=\"POST\" style=\"display:flex; gap:6px; align-items:center;\">
-                        <input type=\"hidden\" name=\"reservation_id\" value=\"{$r['id']}\">
+                    <form method=\"POST\" style=\"display:flex;gap:6px;align-items:center;\">
+                        <input type=\"hidden\" name=\"reservation_id\" value=\"{$id}\">
+                        <input type=\"hidden\" name=\"csrf_token\" value=\"{$csrf}\">
                         {$statusSelect}
                         <button type=\"submit\" name=\"update_status\" class=\"btn-save\">Uložiť</button>
                     </form>
@@ -137,6 +197,7 @@ class ReservationPage
     {
         $email  = $this->getUserEmail();
         $avatar = $this->getUserAvatar();
+        $flash  = $this->renderFlash();
         $table  = $this->renderRows();
 
         include 'sidebar.php';
@@ -154,7 +215,10 @@ class ReservationPage
                 </div>
             </div>
             <div class=\"content\">
-                <div class=\"container\">{$table}</div>
+                <div class=\"container\">
+                    {$flash}
+                    {$table}
+                </div>
             </div>
         </div>";
     }

@@ -14,106 +14,88 @@ class PropertyDetailRepository
     {
         $stmt = $this->conn->prepare("SELECT * FROM properties WHERE id = ?");
         $stmt->execute([$id]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ?: null;
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 }
 
-class ReservationRepository
+class ReservationHandler
 {
     private PDO $conn;
+    private string $message = '';
+    private string $messageType = '';
 
     public function __construct(PDO $conn)
     {
         $this->conn = $conn;
     }
 
-    public function save(int $propertyId, string $name, string $email, string $phone, string $dateFrom, string $dateTo, string $message): bool
-    {
-        $stmt = $this->conn->prepare("INSERT INTO reservations 
-            (property_id, name, email, phone, date_from, date_to, message) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)");
-        return $stmt->execute([$propertyId, $name, $email, $phone, $dateFrom, $dateTo, $message]);
-    }
-}
-
-class ReservationValidator
-{
-    private string $error = '';
-
-    public function validate(array $data): bool
-    {
-        if (empty($data['name']) || empty($data['email']) || empty($data['date_from']) || empty($data['date_to'])) {
-            $this->error = 'Vyplňte všetky povinné polia.';
-            return false;
-        }
-        if ($data['date_to'] <= $data['date_from']) {
-            $this->error = 'Dátum odchodu musí byť po dátume príchodu.';
-            return false;
-        }
-        return true;
-    }
-
-    public function getError(): string
-    {
-        return $this->error;
-    }
-}
-
-class ReservationController
-{
-    private ReservationValidator $validator;
-    private ReservationRepository $repository;
-    private string $message = '';
-    private string $messageType = '';
-
-    public function __construct(ReservationValidator $validator, ReservationRepository $repository)
-    {
-        $this->validator  = $validator;
-        $this->repository = $repository;
-    }
-
     public function handle(int $propertyId): void
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['reserve'])) return;
-
-        $data = [
-            'name'      => trim($_POST['name']      ?? ''),
-            'email'     => trim($_POST['email']     ?? ''),
-            'phone'     => trim($_POST['phone']     ?? ''),
-            'date_from' => trim($_POST['date_from'] ?? ''),
-            'date_to'   => trim($_POST['date_to']   ?? ''),
-            'message'   => trim($_POST['message']   ?? ''),
-        ];
-
-        if (!$this->validator->validate($data)) {
-            $this->message     = $this->validator->getError();
-            $this->messageType = 'error';
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['reserve'])) {
             return;
         }
 
-        $this->repository->save($propertyId, $data['name'], $data['email'], $data['phone'], $data['date_from'], $data['date_to'], $data['message']);
-        $this->message     = 'Rezervácia bola úspešne odoslaná!';
-        $this->messageType = 'success';
+        try {
+            $name  = trim($_POST['name'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $from  = trim($_POST['date_from'] ?? '');
+            $to    = trim($_POST['date_to'] ?? '');
+
+            if (empty($name) || empty($email) || empty($from) || empty($to)) {
+                throw new Exception('Vyplňte všetky povinné polia.');
+            }
+
+            if ($to <= $from) {
+                throw new Exception('Dátum odchodu musí byť po dátume príchodu.');
+            }
+
+            $stmt = $this->conn->prepare("INSERT INTO reservations 
+                (property_id, name, email, phone, date_from, date_to, message) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)");
+            
+            $stmt->execute([
+                $propertyId, 
+                $name, 
+                $email, 
+                trim($_POST['phone'] ?? ''), 
+                $from, 
+                $to, 
+                trim($_POST['message'] ?? '')
+            ]);
+
+            $this->message = 'Rezervácia bola úspešne odoslaná!';
+            $this->messageType = 'success';
+
+        } catch (Exception $e) {
+            $this->message = $e->getMessage();
+            $this->messageType = 'error';
+        }
     }
 
     public function getMessage(): string { return $this->message; }
     public function getMessageType(): string { return $this->messageType; }
 }
 
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-if (!$id) { header('Location: properties.php'); exit; }
+$id = (int)($_GET['id'] ?? 0);
+if (!$id) {
+    header('Location: properties.php');
+    exit;
+}
 
 $propertyRepo = new PropertyDetailRepository($conn);
-$property     = $propertyRepo->findById($id);
-if (!$property) { header('Location: properties.php'); exit; }
+$property = $propertyRepo->findById($id);
 
-$controller = new ReservationController(new ReservationValidator(), new ReservationRepository($conn));
-$controller->handle($id);
+if (!$property) {
+    header('Location: properties.php');
+    exit;
+}
 
-$message     = $controller->getMessage();
-$messageType = $controller->getMessageType();
-$types       = ['villa' => 'Villa', 'apartment' => 'Apartmán', 'penthouse' => 'Penthouse'];
+$reservationHandler = new ReservationHandler($conn);
+$reservationHandler->handle($id);
+
+$message = $reservationHandler->getMessage();
+$messageType = $reservationHandler->getMessageType();
+$types = ['villa' => 'Villa', 'apartment' => 'Apartmán', 'penthouse' => 'Penthouse'];
 ?>
 <!DOCTYPE html>
 <html lang="sk">

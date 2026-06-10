@@ -2,151 +2,69 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
-class Config
+class Database 
 {
-    const DB_HOST   = 'localhost';
-    const DB_USER   = 'root';
-    const DB_PASS   = '';
-    const DB_NAME   = 'villa_agency';
-    const FROM_EMAIL = 'noreply@villa.co';
-}
+    private const HOST = 'localhost';
+    private const NAME = 'villa_agency';
+    private const USER = 'root';
+    private const PASS = '';
 
-class Database
-{
-    private static ?Database $instance = null;
-    private mysqli $connection;
-
-    private function __construct()
+    public static function connect(): PDO 
     {
-        $this->connection = new mysqli(
-            Config::DB_HOST,
-            Config::DB_USER,
-            Config::DB_PASS,
-            Config::DB_NAME
+        return new PDO(
+            "mysql:host=" . self::HOST . ";dbname=" . self::NAME . ";charset=utf8mb4",
+            self::USER,
+            self::PASS,
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
         );
-
-        if ($this->connection->connect_error) {
-            throw new RuntimeException('DB chyba: ' . $this->connection->connect_error);
-        }
-
-        $this->connection->set_charset('utf8mb4');
-    }
-
-    public static function getInstance(): self
-    {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
-
-    public function getConnection(): mysqli
-    {
-        return $this->connection;
     }
 }
 
-class Validator
+class ContactMessage 
 {
-    private array $errors = [];
+    private PDO $db;
 
-    public function sanitize(string $input): string
+    public function __construct() 
     {
-        return trim(htmlspecialchars($input, ENT_QUOTES, 'UTF-8'));
+        $this->db = Database::connect();
     }
 
-    public function isValidEmail(string $email): bool
-    {
-        return (bool) filter_var($email, FILTER_VALIDATE_EMAIL);
-    }
-
-    public function validate(array $data): bool
-    {
-        $this->errors = [];
-
-        if (empty($data['name'])) {
-            $this->errors[] = 'Meno je povinné.';
-        }
-
-        if (empty($data['email']) || !$this->isValidEmail($data['email'])) {
-            $this->errors[] = 'Zadaj platnú emailovú adresu.';
-        }
-
-        if (empty($data['message'])) {
-            $this->errors[] = 'Správa je povinná.';
-        }
-
-        return empty($this->errors);
-    }
-
-    public function getFirstError(): string
-    {
-        return $this->errors[0] ?? '';
-    }
-}
-
-class ContactMessageRepository
-{
-    private mysqli $db;
-
-    public function __construct(Database $database)
-    {
-        $this->db = $database->getConnection();
-    }
-
-    public function save(string $name, string $email, string $subject, string $message, string $ip): bool
+    public function save(string $name, string $email, string $subject, string $message, string $ip): void 
     {
         $stmt = $this->db->prepare(
-            "INSERT INTO contact_messages (name, email, subject, message, ip_address)
+            "INSERT INTO contact_messages (name, email, subject, message, ip_address) 
              VALUES (?, ?, ?, ?, ?)"
         );
-
-        if (!$stmt) {
-            throw new RuntimeException('Prepare zlyhalo: ' . $this->db->error);
-        }
-
-        $stmt->bind_param('sssss', $name, $email, $subject, $message, $ip);
-        $result = $stmt->execute();
-
-        if (!$result) {
-            throw new RuntimeException('Execute zlyhalo: ' . $stmt->error);
-        }
-
-        $stmt->close();
-        return true;
+        $stmt->execute([$name, $email, $subject, $message, $ip]);
     }
 }
 
-class ContactFormController
+class ContactFormHandler 
 {
-    private Validator $validator;
-    private ContactMessageRepository $repository;
-
-    public function __construct(Validator $validator, ContactMessageRepository $repository)
-    {
-        $this->validator   = $validator;
-        $this->repository  = $repository;
-    }
-
-    public function handle(): void
+    public function handle(): void 
     {
         header('Content-Type: application/json');
         $response = ['success' => false, 'message' => ''];
 
         try {
-            $name    = $this->validator->sanitize($_POST['name']    ?? '');
-            $email   = $this->validator->sanitize($_POST['email']   ?? '');
-            $subject = $this->validator->sanitize($_POST['subject'] ?? '');
-            $message = $this->validator->sanitize($_POST['message'] ?? '');
+            $name    = trim(htmlspecialchars($_POST['name'] ?? '', ENT_QUOTES, 'UTF-8'));
+            $email   = trim(htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES, 'UTF-8'));
+            $subject = trim(htmlspecialchars($_POST['subject'] ?? '', ENT_QUOTES, 'UTF-8'));
+            $message = trim(htmlspecialchars($_POST['message'] ?? '', ENT_QUOTES, 'UTF-8'));
             $ip      = $_SERVER['REMOTE_ADDR'];
 
-            if (!$this->validator->validate(compact('name', 'email', 'message'))) {
-                $response['message'] = $this->validator->getFirstError();
-                echo json_encode($response);
-                return;
+            if (empty($name)) {
+                throw new Exception('Meno je povinné.');
+            }
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                throw new Exception('Zadaj platnú emailovú adresu.');
+            }
+            if (empty($message)) {
+                throw new Exception('Správa je povinná.');
             }
 
-            $this->repository->save($name, $email, $subject, $message, $ip);
+            $model = new ContactMessage();
+            $model->save($name, $email, $subject, $message, $ip);
 
             $response['success'] = true;
             $response['message'] = 'Správa odoslaná!';
@@ -157,21 +75,13 @@ class ContactFormController
         }
 
         echo json_encode($response);
+        exit;
     }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        $database   = Database::getInstance();
-        $validator  = new Validator();
-        $repository = new ContactMessageRepository($database);
-        $controller = new ContactFormController($validator, $repository);
-        $controller->handle();
-    } catch (Exception $e) {
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Chyba: ' . $e->getMessage()]);
-    }
-    exit;
+    $handler = new ContactFormHandler();
+    $handler->handle();
 }
 ?>
 <!DOCTYPE html>

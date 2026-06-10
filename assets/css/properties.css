@@ -13,3 +13,68 @@
     .properties-box .col-lg-4 {
         display: flex;
     }
+
+    .filter-pill {
+  background: #2b2b2b;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  white-space: nowrap;
+  height: 42px;
+  box-sizing: border-box;
+}
+.filter-pill::placeholder { color: #9ca3af; }
+.filter-pill:focus, .filter-pill:hover { background: #3d3d3d; }
+select.filter-pill {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 34px;
+}
+input[type="number"].filter-pill { -moz-appearance: textfield; }
+input[type="number"].filter-pill::-webkit-outer-spin-button,
+input[type="number"].filter-pill::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.btn-search { background: #e8541a !important; border: none !important; border-radius: 8px !important; color: #fff !important; }
+.btn-search:hover { background: #c94415 !important; }
+.btn-reset { background: #6b7280 !important; border: none !important; border-radius: 8px !important; color: #fff !important; }
+.btn-reset:hover { background: #4b5563 !important; }
+
+.properties-filter { list-style: none; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 2rem; }
+.properties-filter li a {
+  background: #2b2b2b;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.15s;
+  justify-content: center;
+}
+.filter-pill:not(:placeholder-shown) {
+  background: #3d3d3d;
+  color: #ffffff;
+}
+.properties-filter li a:hover { background: #3d3d3d; }
+.properties-filter li a.is_active { background: #e8541a; }
+
+.filter-pill:-webkit-autofill,
+.filter-pill:-webkit-autofill:hover,
+.filter-pill:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #3d3d3d inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.filter-pill:focus {
+  background: #3d3d3d !important;
+  color: #ffffff !important;
+}

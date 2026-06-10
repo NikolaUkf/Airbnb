@@ -14,7 +14,7 @@ $pageStyles = $pageStyles ?? [];
     <?php foreach ($pageStyles as $style): ?>
         <link rel="stylesheet" href="/Airbnb/<?php echo $style; ?>.css">
     <?php endforeach; ?>
-</head>
+</head> 
 <body>
 
 <div class="top-bar">

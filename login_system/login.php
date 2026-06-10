@@ -2,7 +2,6 @@
 session_start();
 $loginError = isset($_GET['error']) ? true : false;
 
-// Ak je už prihlásený, presmeruj rovno
 if (isset($_SESSION['admin'])) {
     header("Location: ../create_property/create.php");
     exit();
@@ -40,12 +39,12 @@ require_once '../partials/head.php';
       <form action="user_validate.php" method="post" id="loginForm">
 
         <div class="field">
-          <label for="username">Username</label>
+          <label for="username">Používateľské meno</label>
           <input type="text" id="username" name="username" placeholder="Username" autocomplete="username"/>
         </div>
 
         <div class="field">
-          <label for="password">Password</label>
+          <label for="password">Heslo</label>
           <div class="input-wrap">
             <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password"/>
             <button class="toggle-pw" type="button" id="togglePw" aria-label="Show password">
@@ -63,16 +62,16 @@ require_once '../partials/head.php';
         </div>
 
         <div class="forgot-row">
-          <a href="#">Forgot your password? <span>Reset</span></a>
+          <a href="#">Zabudnuté heslo?<span>Reset</span></a>
         </div>
 
-        <button class="btn-primary" type="submit" name="login" id="loginBtn">Log in</button>
+        <button class="btn-primary" type="submit" name="login" id="loginBtn">Prihlásiť</button>
 
       </form>
 
-      <div class="divider">New to Optiflow?</div>
+      <div class="divider">Nemáte ešte účet?</div>
       
-      <button class="btn-secondary" type="button" onclick="window.location.href='register.php'">Sign up</button>
+      <button class="btn-secondary" type="button" onclick="window.location.href='register.php'">Registrácia</button>
     </div>
   </main>
 

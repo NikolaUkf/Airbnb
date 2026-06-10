@@ -1,4 +1,29 @@
 <?php
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty(array_filter($_GET))) {
+    $filterKeys = ['search', 'type', 'min_price', 'max_price', 'bedrooms'];
+    foreach ($filterKeys as $key) {
+        if (isset($_GET[$key]) && $_GET[$key] !== '') {
+            setcookie('filter_' . $key, $_GET[$key], time() + (86400 * 30), '/');
+        } else {
+            setcookie('filter_' . $key, '', time() - 3600, '/'); // zmaž ak prázdne
+        }
+    }
+}
+if (isset($_GET['reset'])) {
+    foreach (['search', 'type', 'min_price', 'max_price', 'bedrooms'] as $key) {
+        setcookie('filter_' . $key, '', time() - 3600, '/');
+    }
+    header('Location: properties.php');
+    exit;
+}
+
+if (empty(array_filter($_GET))) {
+    foreach (['search', 'type', 'min_price', 'max_price', 'bedrooms'] as $key) {
+        if (!empty($_COOKIE['filter_' . $key])) {
+            $_GET[$key] = $_COOKIE['filter_' . $key];
+        }
+    }
+}
 include 'create_property/config.php';
 
 class PropertyFilter
@@ -6,46 +31,32 @@ class PropertyFilter
     private array $conditions = [];
     private array $params = [];
 
-    public function applySearch(string $value): void
+    public function applyFilters(array $get): void
     {
-        if (empty($value)) return;
-        $this->conditions[] = "(title LIKE ? OR address LIKE ?)";
-        $this->params[] = '%' . $value . '%';
-        $this->params[] = '%' . $value . '%';
-    }
+        if (!empty($get['search'])) {
+            $this->conditions[] = "(title LIKE ? OR address LIKE ?)";
+            $this->params[] = '%' . $get['search'] . '%';
+            $this->params[] = '%' . $get['search'] . '%';
+        }
 
-    public function applyType(string $value): void
-    {
-        if (empty($value)) return;
-        $this->conditions[] = "type = ?";
-        $this->params[] = $value;
-    }
+        $mapping = [
+            'type' => ['col' => 'type', 'op' => '='],
+            'min_price' => ['col' => 'price', 'op' => '>='],
+            'max_price' => ['col' => 'price', 'op' => '<='],
+            'bedrooms' => ['col' => 'bedrooms', 'op' => '>=']
+        ];
 
-    public function applyMinPrice(string $value): void
-    {
-        if (empty($value)) return;
-        $this->conditions[] = "price >= ?";
-        $this->params[] = $value;
-    }
-
-    public function applyMaxPrice(string $value): void
-    {
-        if (empty($value)) return;
-        $this->conditions[] = "price <= ?";
-        $this->params[] = $value;
-    }
-
-    public function applyBedrooms(string $value): void
-    {
-        if (empty($value)) return;
-        $this->conditions[] = "bedrooms >= ?";
-        $this->params[] = $value;
+        foreach ($mapping as $key => $rule) {
+            if (!empty($get[$key])) {
+                $this->conditions[] = "{$rule['col']} {$rule['op']} ?";
+                $this->params[] = $get[$key];
+            }
+        }
     }
 
     public function getWhereClause(): string
     {
-        if (empty($this->conditions)) return "WHERE 1=1";
-        return "WHERE " . implode(" AND ", $this->conditions);
+        return empty($this->conditions) ? "WHERE 1=1" : "WHERE " . implode(" AND ", $this->conditions);
     }
 
     public function getParams(): array
@@ -126,14 +137,10 @@ class PropertyView
 }
 
 $filter = new PropertyFilter();
-$filter->applySearch($_GET['search']   ?? '');
-$filter->applyType($_GET['type']       ?? '');
-$filter->applyMinPrice($_GET['min_price'] ?? '');
-$filter->applyMaxPrice($_GET['max_price'] ?? '');
-$filter->applyBedrooms($_GET['bedrooms']  ?? '');
+$filter->applyFilters($_GET);
 
-$repository  = new PropertyRepository($conn);
-$properties  = $repository->findAll($filter);
+$repository = new PropertyRepository($conn);
+$properties = $repository->findAll($filter);
 $view        = new PropertyView();
 ?>
 <!DOCTYPE html>
@@ -150,6 +157,9 @@ $view        = new PropertyView();
     <link rel="stylesheet" href="assets/css/animate.css">
     <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="assets/css/properties.css">
+    <link rel="stylesheet" href="../asse">
+
+   
 </head>
 <body>
 
@@ -169,53 +179,29 @@ $view        = new PropertyView();
 <div class="section properties">
     <div class="container">
 
-        <div class="row mb-4">
-            <div class="col-lg-12">
-                <form method="GET" action="properties.php" class="search-form">
-                    <div class="row g-3">
-                        <div class="col-lg-3 col-md-6">
-                            <input type="text" name="search" class="form-control" placeholder="Hľadať podľa názvu alebo lokácie..." value="<?php echo $view->val('search'); ?>">
-                        </div>
-                        <div class="col-lg-2 col-md-6">
-                            <select name="type" class="form-control">
-                                <option value="">Všetky typy</option>
-                                <option value="villa"     <?php echo $view->selected('type', 'villa'); ?>>Villa</option>
-                                <option value="apartment" <?php echo $view->selected('type', 'apartment'); ?>>Apartmán</option>
-                                <option value="penthouse" <?php echo $view->selected('type', 'penthouse'); ?>>Penthouse</option>
-                            </select>
-                        </div>
-                        <div class="col-lg-2 col-md-4">
-                            <input type="number" name="min_price" class="form-control" placeholder="Min. cena (€)" value="<?php echo $view->val('min_price'); ?>">
-                        </div>
-                        <div class="col-lg-2 col-md-4">
-                            <input type="number" name="max_price" class="form-control" placeholder="Max. cena (€)" value="<?php echo $view->val('max_price'); ?>">
-                        </div>
-                        <div class="col-lg-1 col-md-4">
-                            <select name="bedrooms" class="form-control">
-                                <option value="">Spálne</option>
-                                <?php for ($i = 1; $i <= 6; $i++): ?>
-                                    <option value="<?php echo $i; ?>" <?php echo ($_GET['bedrooms'] ?? '') == $i ? 'selected' : ''; ?>><?php echo $i; ?>+</option>
-                                <?php endfor; ?>
-                            </select>
-                        </div>
-                        <div class="col-lg-1 col-md-6">
-                            <button type="submit" class="btn btn-primary w-100">Hľadať</button>
-                        </div>
-                        <div class="col-lg-1 col-md-6">
-                            <a href="properties.php" class="btn btn-secondary w-100">Reset</a>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <ul class="properties-filter">
-            <li><a class="is_active" href="#!" data-filter="*">Všetky</a></li>
-            <li><a href="#!" data-filter=".villa">Villa</a></li>
-            <li><a href="#!" data-filter=".apartment">Apartmán</a></li>
-            <li><a href="#!" data-filter=".penthouse">Penthouse</a></li>
-        </ul>
-
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <form method="GET" action="properties.php" class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
+            <input type="text" name="search" class="filter-pill" style="min-width:220px;" placeholder="Hľadať podľa názvu alebo lokácie..." value="<?php echo $view->val('search'); ?>">
+            <select name="type" class="filter-pill">
+                <option value="">Všetky typy</option>
+                <option value="villa"     <?php echo $view->selected('type', 'villa'); ?>>Villa</option>
+                <option value="apartment" <?php echo $view->selected('type', 'apartment'); ?>>Apartmán</option>
+                <option value="penthouse" <?php echo $view->selected('type', 'penthouse'); ?>>Penthouse</option>
+            </select>
+            <input type="number" name="min_price" class="filter-pill" style="width:140px;" placeholder="Min. cena (€)" value="<?php echo $view->val('min_price'); ?>">
+            <input type="number" name="max_price" class="filter-pill" style="width:140px;" placeholder="Max. cena (€)" value="<?php echo $view->val('max_price'); ?>">
+            <select name="bedrooms" class="filter-pill" style="width:120px;">
+                <option value="">Spálne</option>
+                <?php for ($i = 1; $i <= 6; $i++): ?>
+                    <option value="<?php echo $i; ?>" <?php echo ($_GET['bedrooms'] ?? '') == $i ? 'selected' : ''; ?>><?php echo $i; ?>+</option>
+                <?php endfor; ?>
+            </select>
+            <button type="submit" class="filter-pill btn-search">Hľadať</button>
+            <a href="properties.php?reset=1" class="filter-pill btn-reset" style="line-height:1.2;">Reset</a>
+        </form>
+    </div>
+</div>
         <div class="row properties-box">
             <?php if (empty($properties)): ?>
                 <?php echo $view->renderEmpty(); ?>

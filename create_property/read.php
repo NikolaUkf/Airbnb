@@ -2,47 +2,58 @@
 session_start();
 include 'config.php';
 
-class PropertyReadRepository
-{
-    private PDO $conn;
+if (empty($_SESSION['admin'])) {
+    header('Location: ../login_system/login.php');
+    exit;
+}
 
-    public function __construct(PDO $conn)
-    {
-        $this->conn = $conn;
-    }
+
+class PropertyRepository
+{
+    public function __construct(private PDO $conn) {}
 
     public function getAll(): array
     {
-        try {
-            return $this->conn->query("SELECT * FROM properties ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            die("Chyba databázy: " . $e->getMessage());
-        }
+        return $this->conn->query("
+            SELECT id, title, address, price, image, bedrooms, bathrooms, area, parking, type
+            FROM properties
+            ORDER BY id DESC
+        ")->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 
-class PropertyReadView
+
+class PropertyView
 {
     public function getImagePath(array $row): string
     {
         $file = $row['image'] ?? '';
-        return (!empty($file) && file_exists("uploads/" . $file)) ? "uploads/" . $file : "uploads/default.png";
+        return (!empty($file) && file_exists("uploads/" . $file))
+            ? "uploads/" . $file
+            : "uploads/default.png";
     }
 
-    public function getUserLabel(): string
+    public function getTypeLabel(string $type): string
     {
-        return isset($_SESSION['email']) ? htmlspecialchars($_SESSION['email']) : 'Používateľ';
-    }
-
-    public function getUserAvatar(): string
-    {
-        return isset($_SESSION['email']) ? strtoupper(substr($_SESSION['email'], 0, 1)) : 'A';
+        return match($type) {
+            'villa'      => 'Villa',
+            'apartment'  => 'Apartmán',
+            'penthouse'  => 'Penthouse',
+            default      => ucfirst($type),
+        };
     }
 }
 
-$repository = new PropertyReadRepository($conn);
+$repository = new PropertyRepository($conn);
 $properties = $repository->getAll();
-$view       = new PropertyReadView();
+$view       = new PropertyView();
+
+
+$flash = '';
+if (!empty($_SESSION['flash'])) {
+    $flash = $_SESSION['flash'];
+    unset($_SESSION['flash']);
+}
 ?>
 <!DOCTYPE html>
 <html lang="sk">
@@ -62,16 +73,21 @@ $view       = new PropertyReadView();
             <h2>Správa inzerátov</h2>
             <div class="user-info">
                 <div class="user-info-text">
-                    <p><?php echo $view->getUserLabel(); ?></p>
+                    <p><?php echo htmlspecialchars($_SESSION['admin']); ?></p>
                     <p>Administrator</p>
                 </div>
                 <div class="user-avatar">
-                    <?php echo $view->getUserAvatar(); ?>
+                    <?php echo strtoupper(substr($_SESSION['admin'], 0, 1)); ?>
                 </div>
             </div>
         </div>
 
         <div class="content-wrapper">
+
+            <?php if ($flash): ?>
+                <div class="message success"><?php echo htmlspecialchars($flash); ?></div>
+            <?php endif; ?>
+
             <?php if (empty($properties)): ?>
                 <div class="empty-state">
                     <p>Žiadne inzeráty zatiaľ neexistujú.</p>
@@ -86,7 +102,8 @@ $view       = new PropertyReadView();
                                 <span class="price-badge"><?php echo number_format((float)$row['price'], 0, '.', ' '); ?> €</span>
                             </div>
                             <div class="card-content">
-                                <div class="category-tag">Luxury Villa</div>
+                                <!-- OPRAVA: typ z DB namiesto natvrdo "Luxury Villa" -->
+                                <div class="category-tag"><?php echo htmlspecialchars($view->getTypeLabel($row['type'])); ?></div>
                                 <h3 class="property-title"><?php echo htmlspecialchars($row['address']); ?></h3>
                                 <div class="specs-list">
                                     <div class="spec-item">Spálne: <strong><?php echo (int)$row['bedrooms']; ?></strong></div>
@@ -95,14 +112,17 @@ $view       = new PropertyReadView();
                                     <div class="spec-item">Parkovanie: <strong><?php echo (int)$row['parking']; ?></strong></div>
                                 </div>
                                 <div class="action-buttons">
-                                    <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn-edit">Upraviť</a>
-                                    <a href="delete.php?id=<?php echo $row['id']; ?>" class="btn-delete" onclick="return confirm('Naozaj vymazať?')">Vymazať</a>
+                                    <!-- (int) zabraňuje manipulácii s ID v URL -->
+                                    <a href="edit.php?id=<?php echo (int)$row['id']; ?>" class="btn-edit">Upraviť</a>
+                                    <a href="delete.php?id=<?php echo (int)$row['id']; ?>" class="btn-delete"
+                                       onclick="return confirm('Naozaj vymazať?')">Vymazať</a>
                                 </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
+
         </div>
     </div>
 </body>

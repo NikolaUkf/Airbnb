@@ -1,4 +1,7 @@
 <?php
+session_start();
+?>
+<?php
 include 'create_property/config.php';
 
 class PropertyDetailRepository
@@ -171,29 +174,41 @@ $types = ['villa' => 'Villa', 'apartment' => 'Apartmán', 'penthouse' => 'Pentho
                         </div>
                     <?php endif; ?>
 
-                    <form method="POST">
-                        <div class="form-group" style="margin-bottom:15px;">
-                            <input type="text" name="name" class="form-control" placeholder="Vaše meno *" required>
-                        </div>
-                        <div class="form-group" style="margin-bottom:15px;">
-                            <input type="email" name="email" class="form-control" placeholder="Váš email *" required>
-                        </div>
-                        <div class="form-group" style="margin-bottom:15px;">
-                            <input type="tel" name="phone" class="form-control" placeholder="Telefón">
-                        </div>
-                        <div class="form-group" style="margin-bottom:15px;">
-                            <label style="font-size:13px;">Dátum príchodu *</label>
-                            <input type="date" name="date_from" class="form-control" required>
-                        </div>
-                        <div class="form-group" style="margin-bottom:15px;">
-                            <label style="font-size:13px;">Dátum odchodu *</label>
-                            <input type="date" name="date_to" class="form-control" required>
-                        </div>
-                        <div class="form-group" style="margin-bottom:15px;">
-                            <textarea name="message" class="form-control" placeholder="Správa" rows="3"></textarea>
-                        </div>
-                        <button type="submit" name="reserve" class="orange-button">Odoslať rezerváciu</button>
-                    </form>
+<form method="POST">
+    <div class="form-group" style="margin-bottom:15px;">
+        <input type="text" 
+               name="name" 
+               class="form-control" 
+               placeholder="Vaše meno *" 
+               value="<?php echo isset($_SESSION['user_username']) ? htmlspecialchars($_SESSION['user_username']) : ''; ?>" 
+               <?php echo isset($_SESSION['user_username']) ? 'readonly' : ''; ?> 
+               required>
+    </div>
+    <div class="form-group" style="margin-bottom:15px;">
+        <input type="email" 
+               name="email" 
+               class="form-control" 
+               placeholder="Váš email *" 
+               value="<?php echo isset($_SESSION['user_email']) ? htmlspecialchars($_SESSION['user_email']) : ''; ?>" 
+               <?php echo isset($_SESSION['user_email']) ? 'readonly' : ''; ?> 
+               required>
+    </div>
+    <div class="form-group" style="margin-bottom:15px;">
+        <input type="tel" name="phone" class="form-control" placeholder="Telefón">
+    </div>
+    <div class="form-group" style="margin-bottom:15px;">
+        <label style="font-size:13px;">Dátum príchodu *</label>
+        <input type="date" name="date_from" class="form-control" required>
+    </div>
+    <div class="form-group" style="margin-bottom:15px;">
+        <label style="font-size:13px;">Dátum odchodu *</label>
+        <input type="date" name="date_to" class="form-control" required>
+    </div>
+    <div class="form-group" style="margin-bottom:15px;">
+        <textarea name="message" class="form-control" placeholder="Správa" rows="3"></textarea>
+    </div>
+    <button type="submit" name="reserve" class="orange-button">Odoslať rezerváciu</button>
+</form>
                 </div>
             </div>
         </div>

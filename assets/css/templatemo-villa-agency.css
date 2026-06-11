@@ -111,6 +111,13 @@ img {
   overflow: hidden;
 }
 
+.detail {
+    width: 100%;            
+    max-height: 400px;       
+    object-fit: cover;      
+    display: block;          
+}
+
 /* 
 ---------------------------------------------
 Global Styles

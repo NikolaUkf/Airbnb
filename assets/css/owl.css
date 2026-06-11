@@ -184,3 +184,15 @@
   z-index: 1;
   height: 100%;
   width: 100%; }
+
+
+.main-banner .owl-carousel {
+    display: block !important;
+    min-height: auto !important;
+    height: auto !important;
+}
+
+.main-banner .owl-carousel .item {
+    height: auto !important;
+    min-height: 450px;
+}

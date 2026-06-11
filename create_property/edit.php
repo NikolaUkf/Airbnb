@@ -1,17 +1,10 @@
 <?php
 session_start();
+if (!isset($_SESSION['admin'])) {
+    header("Location: ../login_system/login.php");
+    exit();
+}
 include 'config.php';
-
-
-if (empty($_SESSION['admin'])) {
-    header('Location: ../login_system/login.php');
-    exit;
-}
-
-if (empty($_GET['id'])) {
-    header('Location: read.php');
-    exit;
-}
 
 $id = (int) $_GET['id'];
 

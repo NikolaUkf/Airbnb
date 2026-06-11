@@ -1,5 +1,5 @@
         table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; }
-        th { background: #f5a425; color: #fff; padding: 12px 16px; text-align: left; font-size: 14px; }
+        th { background: #ff5a3c; color: #fff; padding: 12px 16px; text-align: left; font-size: 14px; }
         td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #444; }
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: #fafafa; }

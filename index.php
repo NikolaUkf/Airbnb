@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="sk">
 
@@ -18,12 +19,23 @@
     <link rel="stylesheet" href="assets/css/animate.css">
     <link rel="stylesheet"href="https://unpkg.com/swiper@7/swiper-bundle.min.css"/>
     <link rel="stylesheet" href="/Airbnb/assets/css/head.css">
+
+    <link rel="icon" href="data:,">
     
   </head>
 
 <body>
 
 <?php include 'partials/head.php'; ?>
+<?php if (isset($_SESSION['flash_message'])): ?>
+  <div class="container mt-3">
+    <div class="alert alert-success alert-dismissible fade show" role="alert" style="z-index: 9999; position: relative;">
+      <i class="fa fa-check-circle me-2"></i> <?php echo $_SESSION['flash_message']; ?>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  </div>
+  <?php unset($_SESSION['flash_message']); ?>
+<?php endif; ?>
   <!-- ***** Header Area End ***** -->
 
   <div class="main-banner">
@@ -79,12 +91,12 @@
             <div class="accordion-item">
               <h2 class="accordion-header" id="headingTwo">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                  Ako to funguje?
+                  Aké ubytovanie ponúkate?
                 </button>
               </h2>
               <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
                 <div class="accordion-body">
-                  Bolesť <strong>almesit amet</strong>, consectetur adipiscing elit, sed sa nerovná eiusmod tempor incididunt ut labore consectetur <code>adipiscing</code> elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Ponúkame exkluzívny výber prémiového ubytovania navrhnutého tak, aby splnilo očakávania aj tých najnáročnejších hostí. Naše portfólio je rozdelené do troch hlavných kategórií, z ktorých každá ponúka jedinečný zážitok, maximálne súkromie a špičkový komfort
                 </div>
               </div>
             </div>
@@ -96,7 +108,7 @@
               </h2>
               <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
                 <div class="accordion-body">
-                  Bolesť <strong>almesit amet</strong>, consectetur adipiscing elit, sed sa nerovná eiusmod tempor incididunt ut labore consectetur <code>adipiscing</code> elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Na rozdiel od iných portálov prechádza každá vila a apartmán v našej ponuke prísnou kontrolou kvality a čistoty. Garantujeme vám transparentné ceny bez skrytých poplatkov, okamžitú online rezerváciu a 24/7 zákaznícku podporu.
                 </div>
               </div>
             </div>
@@ -225,12 +237,11 @@
                       </div>
                     </div>
                     <div class="col-lg-6">
-                      <img src="assets/images/deal-01.jpg" alt="">
+                      <img src="assets/images/apartment1.jpg" alt="apartman" class="detail">
                     </div>
                     <div class="col-lg-3">
-                      <h4>Ďalšie informácie o majetku</h4>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, do eiusmod tempor pack incididunt ut labore et dolore magna aliqua quised ipsum suspendisse. 
-                      <br><br>Keď potrebujete bezplatné CSS šablóny, môžete jednoducho napísať TemplateMo do akejkoľvek vyhľadávacej stránky. Okrem toho môžete napísať TemplateMo Portfolio, TemplateMo One Page Layouts atď.</p>
+                      <h4>Prečo sú naše apartmány tou najlepšou voľbou?</h4>
+                      <p>Autentický zážitok z lokality: Naše apartmány sa nachádzajú v tých najlepších štvrtiach – priamo v srdci pulzujúceho mesta alebo len pár krokov od pláže či lyžiarskeho svahu. Otvoríte dvere a ste okamžite v centre diania.Komfort a vybavenie ako doma: Vlastná plne vybavená kuchyňa, kde si môžete kedykoľvek pripraviť ranné espresso alebo lokálne dobroty z trhu. Obývacia izba, kde si večer hodíte nohy na stôl a pozriete si film. Jednoducho maximálne pohodlie.</p>
                       <div class="icon-button">
                         <a href="properties.php"><i class="fa fa-calendar"></i> Dohodnúť si návštevu</a>
                       </div>
@@ -251,11 +262,11 @@
                       </div>
                     </div>
                     <div class="col-lg-6">
-                      <img src="assets/images/deal-02.jpg" alt="">
+                      <img src="assets/images/villa1.jpg" alt="villa" class="detail">
                     </div>
                     <div class="col-lg-3">
-                      <h4>Podrobné informácie o vile</h4>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, do eiusmod tempor pack incididunt ut labore et dolore magna aliqua quised ipsum suspendisse. <br><br>Swag fanny pack lyft blog twee. JOMO ethical copper mug, succulents typewriter shaman DIY kitsch twee taiyaki fixie hella venmo after messenger poutine next level humblebrag swag franzen.</p>
+                      <h4>Prečo sú naše vily tou najlepšou voľbou pre vašu dovolenku?</h4>
+                      <p>Celý pozemok, azúrový bazén, slnečná terasa a dizajnové priestory patria iba vám a vašim najbližším.Zabudnite na stiesnené izby.Naše vily ponúkajú veľkorysé obývacie priestory, plne vybavené moderné kuchyne a kráľovské spálne s výhľadom, ktorý vám vyrazí dych.<br><br></p>
                       <div class="icon-button">
                         <a href="properties.php"><i class="fa fa-calendar"></i> Dohodnúť si návštevu</a>
                       </div>
@@ -276,11 +287,11 @@
                       </div>
                     </div>
                     <div class="col-lg-6">
-                      <img src="assets/images/deal-03.jpg" alt="">
+                      <img src="assets/images/penthouse1.jpg" alt="penthouse" class="detail" >
                     </div>
                     <div class="col-lg-3">
                       <h4>Ďalšie informácie o Penthause</h4>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, do eiusmod tempor pack incididunt ut labore et dolore magna aliqua quised ipsum suspendisse. <br><br>Swag fanny pack lyft blog twee. JOMO ethical copper mug, succulents typewriter shaman DIY kitsch twee taiyaki fixie hella venmo after messenger poutine next level humblebrag swag franzen.</p>
+                      <p>Zabudnite na kompromisy. Penthouse nie je len ubytovanie – je to vyhlásenie životného štýlu. Tento exkluzívny apartmán na samom vrchole budovy predstavuje absolútny vrchol luxusu, dizajnu a súkromia, aký môžete v meste zažiť.<br><br>Výhľad, ktorý vám vyrazí dych: Celé mesto alebo pobrežie máte ako na dlani priamo z vašej obývačky vďaka panoramatickým oknám od podlahy až po strop.</p>
                       <div class="icon-button">
                         <a href="properties.php"><i class="fa fa-calendar"></i> Dohodnúť si návštevu</a>
                       </div>

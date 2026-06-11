@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'config.php'; // DB spojenie cez PDO — konzistentné so zvyškom projektu
+include 'config.php';
 
 if (empty($_SESSION['admin'])) {
     header('Location: ../login_system/login.php');
@@ -84,7 +84,6 @@ $unreadCount = count(array_filter($messages, fn($m) => $m['status'] === 'new'));
     <div class="container">
 
         <?php if ($unreadCount > 0): ?>
-            <!-- Tlačidlo na manuálne označenie — nie automaticky pri načítaní -->
             <form method="POST" style="margin-bottom: 1rem;">
                 <button type="submit" name="mark_read" class="btn-save">
                     Označiť všetky ako prečítané

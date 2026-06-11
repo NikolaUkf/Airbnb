@@ -61,7 +61,7 @@ $pageStyles = $pageStyles ?? [];
                 <li>
                     <a href="/Airbnb/index.php"
                        class="main-nav__link <?php echo ($_SERVER['PHP_SELF'] === '/Airbnb/index.php') ? 'active' : ''; ?>">
-                        Domov
+                         Domov
                     </a>
                 </li>
                 <li>
@@ -76,12 +76,36 @@ $pageStyles = $pageStyles ?? [];
                         Kontakt
                     </a>
                 </li>
-                <li>
-                    <a href="/Airbnb/login_system/login.php"
-                       class="main-nav__link <?php echo ($_SERVER['PHP_SELF'] === '/Airbnb/login_system/login.php') ? 'active' : ''; ?>">
-                        Prihlásenie
-                    </a>
-                </li>
+                
+                <?php if (isset($_SESSION['user_username'])): ?>
+                    <li>
+                        <a href="/Airbnb/user/profil.php" class="main-nav__link <?php echo ($_SERVER['PHP_SELF'] === '/Airbnb/user/profil.php') ? 'active' : ''; ?>">
+                            👤 <?php echo htmlspecialchars($_SESSION['user_username']); ?>
+                        </a>
+                    </li>
+                <?php elseif (isset($_SESSION['admin'])): ?>
+                    <li>
+                        <span class="main-nav__link" style="cursor: default; color: #ff5e13;">
+                            Admin: <?php echo htmlspecialchars($_SESSION['admin']); ?>
+                        </span>
+                    </li>
+                    <li>
+                        <a href="/Airbnb/create_property/create.php" class="main-nav__link">
+                            Pridať ubytovanie
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Airbnb/logout.php" class="main-nav__link">
+                            Odhlásiť sa
+                        </a>
+                    </li>
+                <?php else: ?>
+                    <li>
+                        <a href="/Airbnb/login_system/login.php" class="main-nav__link <?php echo ($_SERVER['PHP_SELF'] === '/Airbnb/login_system/login.php') ? 'active' : ''; ?>">
+                            Prihlásenie
+                        </a>
+                    </li>
+                <?php endif; ?>
             </ul>
         </nav>
         <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">

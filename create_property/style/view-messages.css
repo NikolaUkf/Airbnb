@@ -50,3 +50,12 @@
     color: #888;
     font-size: 14px;
 }
+
+.btn-save {
+    background: #ff5a1f;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    text-decoration: none;
+}

@@ -1,11 +1,10 @@
 <?php
 session_start();
-include 'config.php';
-
-if (empty($_SESSION['admin'])) {
-    header('Location: ../login_system/login.php');
-    exit;
+if (!isset($_SESSION['admin'])) {
+    header("Location: ../login_system/login.php");
+    exit();
 }
+include 'config.php';
 
 class PropertyRepository
 {

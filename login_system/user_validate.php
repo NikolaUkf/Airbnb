@@ -39,10 +39,8 @@ class AuthController
     {
         if ($_SERVER["REQUEST_METHOD"] !== "POST") return;
 
-
         $username = trim($_POST["username"] ?? '');
         $password = $_POST["password"]      ?? '';
-
 
         if ($username === '' || $password === '') {
             header("Location: login.php?error=1");
@@ -51,7 +49,7 @@ class AuthController
 
         $admin = $this->repository->findAdmin($username);
         if ($admin && password_verify($password, $admin['password'])) {
-            session_regenerate_id(true); // Ochrana pred session fixation
+            session_regenerate_id(true); 
             $_SESSION['admin'] = $admin['username'];
             header("Location: ../create_property/create.php");
             exit();
@@ -59,10 +57,12 @@ class AuthController
 
         $user = $this->repository->findUser($username);
         if ($user && password_verify($password, $user['password'])) {
-            session_regenerate_id(true); // Ochrana pred session fixation
+            session_regenerate_id(true); 
             $_SESSION['user_id']       = $user['id'];
             $_SESSION['user_username'] = $user['username'];
             $_SESSION['user_email']    = $user['email'];
+            
+            $_SESSION['flash_message'] = "Úspešne ste sa prihlásili. Vitajte späť, " . $user['username'] . "!";
             header("Location: ../index.php");
             exit();
         }

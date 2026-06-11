@@ -122,7 +122,6 @@ class ReservationPage
         $html = "<select name=\"status\" id=\"{$selectId}\" aria-label=\"Stav rezervácie\">";
         foreach ($this->manager->getStatuses() as $value => $label) {
             $selected = $current === $value ? ' selected' : '';
-            // htmlspecialchars na value aj label — obrana pred XSS
             $safeValue = htmlspecialchars($value);
             $safeLabel = htmlspecialchars($label);
             $html .= "<option value=\"{$safeValue}\"{$selected}>{$safeLabel}</option>";
@@ -153,7 +152,7 @@ class ReservationPage
         $rows  = '';
 
         foreach ($this->reservations as $r) {
-            $id          = (int)$r['id']; // int — htmlspecialchars nie je potrebný
+            $id          = (int)$r['id']; 
             $statusLabel = $this->manager->getStatusLabel($r['status']);
             $statusClass = htmlspecialchars($r['status']);
             $statusSelect = $this->renderStatusSelect($r['status'], $id);

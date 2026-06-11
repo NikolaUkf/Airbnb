@@ -1,4 +1,7 @@
 <?php
+session_start();
+?>
+<?php
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty(array_filter($_GET))) {
     $filterKeys = ['search', 'type', 'min_price', 'max_price', 'bedrooms'];
     foreach ($filterKeys as $key) {

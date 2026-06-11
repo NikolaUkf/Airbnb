@@ -29,3 +29,89 @@
     .orange-button:hover {
         background: #e09000;
     }
+
+            .flatpickr-calendar {
+            background: #ffffff !important;
+            border: 1px solid #cccccc !important;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05) !important;
+            border-radius: 4px !important;
+            padding: 10px !important;
+            font-family: 'Poppins', sans-serif !important;
+        }
+        .flatpickr-months .flatpickr-month {
+            color: #000000 !important;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            font-weight: 600 !important;
+            color: #000000 !important;
+        }
+        .flatpickr-current-month input.cur-year {
+            font-weight: 600 !important;
+            color: #000000 !important;
+        }
+        .flatpickr-months .flatpickr-prev-month, 
+        .flatpickr-months .flatpickr-next-month {
+            color: #000000 !important;
+            fill: #000000 !important;
+        }
+        span.flatpickr-weekday {
+            color: #333333 !important;
+            font-weight: 500 !important;
+        }
+        .flatpickr-day {
+            border-radius: 4px !important;
+            color: #000000 !important;
+            border: 1px solid transparent !important;
+        }
+        .flatpickr-day.today {
+            border-color: #000000 !important;
+            background: transparent !important;
+            color: #000000 !important;
+            font-weight: bold !important;
+        }
+        .flatpickr-day.today:hover {
+            background: #f0f0f0 !important;
+            color: #000000 !important;
+        }
+        .flatpickr-day.selected, 
+        .flatpickr-day.selected:hover {
+            background: #f5a425 !important;
+            border-color: #f5a425 !important;
+            color: #ffffff !important;
+        }
+        .flatpickr-day.flatpickr-disabled, 
+        .flatpickr-day.flatpickr-disabled:hover {
+            background: #ff9494 !important;
+            color: #222222 !important;
+            border-radius: 4px !important;
+            opacity: 0.85 !important;
+            cursor: not-allowed !important;
+            border: none !important;
+        }
+        .flatpickr-footer-legend {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            margin-top: 5px;
+            border-top: 1px solid #eeeeee;
+            font-size: 13px;
+            color: #0056b3;
+        }
+        .flatpickr-footer-legend .legend-status {
+            display: flex;
+            align-items: center;
+            color: #333333;
+        }
+        .flatpickr-footer-legend .color-box {
+            width: 12px;
+            height: 12px;
+            background: #ff9494;
+            border-radius: 2px;
+            margin-right: 6px;
+        }
+        .flatpickr-footer-legend .action-btn {
+            cursor: pointer;
+            text-decoration: none;
+            color: #0056b3;
+        }

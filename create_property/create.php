@@ -155,7 +155,7 @@ $controller->handle();
                     </div>
                     <div class="form-group">
                         <label>Cena</label>
-                        <input type="text" name="price" placeholder="Cena za mesiac" required>
+                        <input type="text" name="price" placeholder="Cena za noc" required>
                     </div>
                     <div class="form-group">
                         <label>Adresa</label>

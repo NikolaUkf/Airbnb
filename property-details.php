@@ -161,7 +161,12 @@ $types = ['villa' => 'Villa', 'apartment' => 'Apartmán', 'penthouse' => 'Pentho
                 <div class="main-content">
                     <span class="category"><?php echo $types[$property['type']] ?? 'Villa'; ?></span>
                     <h4><?php echo htmlspecialchars($property['address']); ?></h4>
-                    <h3 style="color:#f5a425;">€<?php echo number_format($property['price'], 0, ',', '.'); ?> / mesiac</h3>
+                    <h3 style="color:#f5a425;">
+                    €<?php 
+                        $clean_price = (float) str_replace(' ', '', $property['price']);
+                        echo number_format($clean_price, 0, ',', '.'); 
+                    ?> / noc
+                    </h3>
                 </div>
                 <div class="info-table" style="margin-top:20px;">
                     <ul>

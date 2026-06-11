@@ -66,7 +66,7 @@ $pageStyles = $pageStyles ?? [];
                 </li>
                 <li>
                     <a href="/Airbnb/properties.php"
-                       class="main-nav__link <?php echo ($_SERVER['PHP_SELF'] === '/Airbnb/properties.php') ? 'active' : ''; ?>">
+                       class="main-nav__link <?php echo ($_SERVER['PHP_SELF'] === '/Airbnb/properties.php' || $_SERVER['PHP_SELF'] === '/Airbnb/property-details.php') ? 'active' : ''; ?>">
                         Akomodácie
                     </a>
                 </li>

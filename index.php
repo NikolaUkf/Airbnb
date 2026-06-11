@@ -9,10 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <title>Villa Agency</title>
-
-    <!-- Bootstrap core CSS -->
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Additional CSS Files -->
     <link rel="stylesheet" href="assets/css/fontawesome.css">
     <link rel="stylesheet" href="assets/css/templatemo-villa-agency.css">
     <link rel="stylesheet" href="assets/css/owl.css">
@@ -36,7 +33,6 @@
   </div>
   <?php unset($_SESSION['flash_message']); ?>
 <?php endif; ?>
-  <!-- ***** Header Area End ***** -->
 
   <div class="main-banner">
     <div class="owl-carousel owl-banner">
@@ -49,13 +45,13 @@
       <div class="item item-2">
         <div class="header-text">
           <span class="category">Nitra, <em>Slovensko</em></span>
-          <h2>Správna voľba<br>Širšiu ponuku nenájdete</h2>
+          <h2>Luxus<br>aký inde nenájdene</h2>
         </div>
       </div>
       <div class="item item-3">
         <div class="header-text">
           <span class="category">Miami, <em>Južná Florida</em></span>
-          <h2><br>Luxusné apartmány</h2>
+          <h2><br>ubytovanie, <br> ktoré vyrazí dych</h2>
         </div>
       </div>
     </div>

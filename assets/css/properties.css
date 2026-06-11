@@ -78,3 +78,27 @@ input[type="number"].filter-pill::-webkit-inner-spin-button { -webkit-appearance
   background: #3d3d3d !important;
   color: #ffffff !important;
 }
+
+.properties-items .item .img-container {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    border-radius: 20px !important;
+}
+
+.properties-items .item .img-container .price-badge {
+    position: absolute !important;
+    bottom: 15px !important;
+    right: 15px !important;
+    background-color: #f35525 !important;
+    color: #ffffff !important;
+    padding: 8px 15px !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    border-radius: 10px !important;
+    z-index: 99 !important;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3) !important;
+    margin: 0 !important;
+    display: block !important;
+}

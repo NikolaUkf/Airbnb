@@ -94,20 +94,29 @@ class PropertyView
         $type  = htmlspecialchars($property['type']);
         $id    = $property['id'];
         $label = $types[$property['type']] ?? 'Villa';
-        $price = number_format($property['price'], 0, ',', '.');
+        $clean_price = (float) str_replace(' ', '', $property['price']);
+        $price = number_format($clean_price, 0, ',', '.');
         $title = htmlspecialchars($property['title']);
         $addr  = htmlspecialchars($property['address']);
         $image = htmlspecialchars($property['image']);
 
-        return <<<HTML
+return <<<HTML
         <div class="col-lg-4 col-md-6 align-self-center mb-30 properties-items {$type}">
             <div class="item">
-                <a href="property-details.php?id={$id}">
-                    <img src="create_property/uploads/{$image}" alt="{$title}">
-                </a>
-                <span class="category">{$label}</span>
-                <h6>€{$price}</h6>
-                <h4><a href="property-details.php?id={$id}">{$addr}</a></h4>
+                <div class="img-container">
+                    <a href="property-details.php?id={$id}">
+                        <img src="create_property/uploads/{$image}" alt="{$title}" style="display: block; width: 100%;">
+                    </a>
+                    <div class="price-badge">€{$price}</div>
+                </div>
+
+                <span class="category" style="margin-top: 15px; display: inline-block;">{$label}</span>
+                
+                <h4>
+                    <a href="property-details.php?id={$id}">{$title}</a>
+                    <span style="display: block; font-size: 14px; color: #7a7a7a; font-weight: normal; margin-top: 5px;">{$addr}</span>
+                </h4>
+                
                 <ul>
                     <li>Spálne: <span>{$property['bedrooms']}</span></li>
                     <li>Kúpeľne: <span>{$property['bathrooms']}</span></li>

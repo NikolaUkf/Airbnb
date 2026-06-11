@@ -86,6 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $handler = new ContactFormHandler();
     $handler->handle();
 }
+
+$prefilled_name = $_SESSION['user_username'] ?? '';
+$prefilled_email = $_SESSION['user_email'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="sk">
@@ -150,13 +153,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="col-lg-12">
                             <fieldset>
                                 <label for="name">Meno a priezvisko</label>
-                                <input type="text" name="name" id="name" placeholder="Vaše meno..." autocomplete="on" required>
+                                <input type="text" name="name" id="name" placeholder="Vaše meno..." autocomplete="on" value="<?php echo htmlspecialchars($prefilled_name); ?>" required>
                             </fieldset>
                         </div>
                         <div class="col-lg-12">
                             <fieldset>
                                 <label for="email">Email</label>
-                                <input type="text" name="email" id="email" pattern="[^ @]*@[^ @]*" placeholder="E-mail..." required>
+                                <input type="text" name="email" id="email" pattern="[^ @]*@[^ @]*" placeholder="E-mail..." value="<?php echo htmlspecialchars($prefilled_email); ?>" required>
                             </fieldset>
                         </div>
                         <div class="col-lg-12">

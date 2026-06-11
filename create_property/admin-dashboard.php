@@ -111,7 +111,9 @@ $view       = new DashboardView();
                 <tr>
                     <td><img src="<?php echo htmlspecialchars($view->getImagePath($row)); ?>"></td>
                     <td><?php echo htmlspecialchars($row['title']); ?></td>
-                    <td>€<?php echo number_format($row['price'], 0, ',', ' '); ?></td>
+                    <td>€<?php 
+                    $cista_cena = (float) str_replace(' ', '', $row['price']);  
+                    echo number_format($cista_cena, 0, '', ' '); ?></td> 
                     <td><?php echo htmlspecialchars($row['address']); ?></td>
                     <td class="actions">
                         <a href="edit.php?id=<?php echo $row['id']; ?>">Upraviť</a>
